@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/Sanierungsplaner.Android/Sanierungsplaner.Android.csproj" />
+  <Project Path="tests/Sanierungsplaner.AndroidTests/Sanierungsplaner.AndroidTests.csproj" />
+</Solution>

@@ -7,7 +7,19 @@
         <Style x:Key="OptionalMessage" TargetType="TextBlock"><Setter Property="Margin" Value="0,0,0,12" /><Style.Triggers><Trigger Property="Text" Value=""><Setter Property="Visibility" Value="Collapsed" /></Trigger></Style.Triggers></Style>
     </UserControl.Resources>
     <StackPanel>
-<WrapPanel><Button Content="+ Verkauf / Gutschrift" Command="{Binding AddCreditCommand}" Margin="0,0,12,16" /><Button Content="+ Einkauf / Position erfassen" Command="{Binding AddCommand}" Margin="0,0,0,16" /></WrapPanel>
+        <UniformGrid Columns="2" Margin="0,0,0,16">
+            <Border Style="{StaticResource Panel}" Margin="0,0,8,0"><StackPanel>
+                <TextBlock Text="Aktuelle Gesamtausgaben" FontSize="17" FontWeight="SemiBold" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding NetPaidLabel}" FontSize="28" FontWeight="SemiBold" Foreground="#176B56" Margin="0,8,0,8" />
+                <TextBlock Text="Netto nach Gutschriften und Beiträgen an Tobias" FontSize="12" TextWrapping="Wrap" Foreground="#596B62" />
+                <WrapPanel Margin="0,6,0,0"><TextBlock Text="Ursprünglich bezahlt: " FontSize="12" /><TextBlock Text="{Binding PaidLabel}" FontSize="12" /></WrapPanel>
+            </StackPanel></Border>
+            <Border Style="{StaticResource Panel}" Margin="8,0,0,0"><StackPanel>
+                <TextBlock Text="Geplante Ausgaben" FontSize="17" FontWeight="SemiBold" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding PlannedTotalLabel}" FontSize="28" FontWeight="SemiBold" Foreground="#176B56" Margin="0,8,0,8" />
+                <TextBlock Text="Noch geplante Positionen, einschließlich gewählter MwSt." FontSize="12" TextWrapping="Wrap" Foreground="#596B62" />
+            </StackPanel></Border>
+        </UniformGrid><WrapPanel><Button Content="+ Verkauf / Gutschrift" Command="{Binding AddCreditCommand}" Margin="0,0,12,16" /><Button Content="+ Einkauf / Position erfassen" Command="{Binding AddCommand}" Margin="0,0,0,16" /></WrapPanel>
         <TextBlock Text="{Binding Error}" Style="{StaticResource OptionalMessage}" Foreground="#852D14" AutomationProperties.LiveSetting="Assertive" />
         <TextBlock Text="{Binding Notice}" Style="{StaticResource OptionalMessage}" Foreground="#176B56" AutomationProperties.LiveSetting="Polite" />
         <Border Style="{StaticResource Panel}">

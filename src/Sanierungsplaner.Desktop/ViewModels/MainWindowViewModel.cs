@@ -16,11 +16,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private bool _showAbout, _isEditing, _loadFailed;
     private string _name = "", _address = "", _notes = "", _error = "", _status = "";
 
-    public MainWindowViewModel(IProjectStore store, IUnsavedChangesPrompt prompt, ICostItemEditor? costEditor = null, IReimbursementEditor? repayments = null, ISalesCreditEditor? sales = null)
+    public MainWindowViewModel(IProjectStore store, IUnsavedChangesPrompt prompt, ICostItemEditor? costEditor = null, IReimbursementEditor? repayments = null, ISalesCreditEditor? sales = null, IIncomingRepaymentEditor? incoming = null)
     {
         _store = store;
         _prompt = prompt;
-        CostPlan = new CostPlanViewModel(costEditor ?? new CostItemEditor(), () => DraftChanged(nameof(CostPlan)), repayments, sales);
+        CostPlan = new CostPlanViewModel(costEditor ?? new CostItemEditor(), () => DraftChanged(nameof(CostPlan)), repayments, sales, incoming);
         ShowHomeCommand = new RelayCommand(() => { _showAbout = false; NotifyView(); });
         ShowAboutCommand = new RelayCommand(() => { _showAbout = true; NotifyView(); });
         NewProjectCommand = new RelayCommand(() => { if (CanLeaveEditor()) Edit(null); }, () => !_loadFailed);
@@ -43,7 +43,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public bool IsEmpty => Projects.Count == 0 && !_loadFailed;
     public string ProjectCount => Projects.Count == 1 ? "1 gespeichertes Projekt" : $"{Projects.Count} gespeicherte Projekte";
     public string PageTitle => ShowAbout ? "Deine Pläne. Lokal gespeichert." : IsEditing ? (_original is null ? "Ein neues Projekt." : "Dein Projekt im Detail.") : "Raum für deine Pläne.";
-    public string PageDescription => ShowAbout ? "Sanierungsplaner · Version 0.8.1"
+    public string PageDescription => ShowAbout ? "Sanierungsplaner · Version 0.9.0"
         : IsEditing ? "Erfasse die Grundlagen für deine Sanierung. Du kannst alle Angaben später ändern."
         : "Alle Sanierungsvorhaben an einem Ort. Lege ein Projekt an oder arbeite an einem bestehenden weiter.";
     public string Name { get => _name; set { _name = value; DraftChanged(); } }

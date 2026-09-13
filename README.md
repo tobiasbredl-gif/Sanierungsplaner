@@ -1,6 +1,6 @@
 # Sanierungsplaner
 
-Native Windows-Desktop-App mit C# und WPF auf .NET 10. Version 0.8.1 bietet lokale Projekte, automatisch zusammengefasste Einkäufe mit Datum protokollierte Rückzahlungen von Tobias an Lea, Wolfgang und Jennifer sowie Verkaufsgutschriften und automatische Zahlungsbeträge.
+Native Windows-Desktop-App mit C# und WPF auf .NET 10. Version 0.9.0 bietet lokale Projekte, automatisch zusammengefasste Einkäufe mit Datum protokollierte Rückzahlungen von Tobias an Lea, Wolfgang und Jennifer sowie Verkaufsgutschriften und automatische Zahlungsbeträge.
 
 ## Ein Projekt anlegen
 
@@ -153,3 +153,9 @@ Diese Rückzahlungen reduzieren ausschließlich Tobias' Nettoausgaben. Die Ausga
 Das Protokoll erhält Originale und Korrekturen als zusätzliche Stornos. Gespeicherte Einträge lassen sich nicht überschreiben oder entfernen. Frühere Projekte starten mit leerem Protokoll. Speichern aktualisiert auf Dateiformat 6; anschließend mindestens Version 0.8 verwenden.
 
 Bei Lea, Wolfgang und Jennifer öffnet **An Tobias zahlen** direkt die Erfassung ihres Kostenanteils, auch bei 0 € offen. Die Spalte **An Tobias bezahlt** zeigt ihre bisherigen Beiträge. Beispiel: Tobias bezahlt 4.000 €, Lea zahlt 1.000 € dazu: Tobias trägt netto 3.000 €, Lea bleibt bei 0 € offen und hat separat 1.000 € an Tobias bezahlt. Der Button Zurückzahlen bleibt für Erstattungen von Tobias an die jeweilige Person.
+
+## Android-Testversion 0.9.0
+
+Die native Android-App übernimmt die Funktionen der Windows-Version 0.9.0 mit derselben Berechnungs- und Speicherlogik. Die erste APK arbeitet lokal auf Tobias' Testhandy. Installation, Funktionsvergleich und Bauanleitung stehen in [docs/android.md](docs/android.md). Handy und PC synchronisieren noch nicht; die sichere WLAN-Kopplung folgt separat.
+
+Oben in Kosten & Zahlungen zeigen Windows und Android die aktuellen Netto-Gesamtausgaben sowie separat geplante Ausgaben. Der ursprünglich bezahlte Betrag bleibt darunter sichtbar. Geplante Positionen zählen erst bei tatsächlichen Zahlungen zu den aktuellen Ausgaben.

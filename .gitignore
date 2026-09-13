@@ -11,3 +11,7 @@ TestResults/
 !.env.example
 *.pfx
 *.p12
+
+*.keystore
+*.jks
+local.properties

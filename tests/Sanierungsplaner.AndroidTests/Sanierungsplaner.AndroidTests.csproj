@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings></PropertyGroup>
+ <ItemGroup>
+ <Compile Include="../../src/Sanierungsplaner.Desktop/Models/*.cs" Link="Models/%(Filename)%(Extension)" />
+ <Compile Include="../../src/Sanierungsplaner.Desktop/ViewModels/*.cs" Link="ViewModels/%(Filename)%(Extension)" />
+ <Compile Include="../../src/Sanierungsplaner.Desktop/Commands/*.cs" Link="Commands/%(Filename)%(Extension)" />
+ <Compile Include="../../src/Sanierungsplaner.Desktop/Services/I*.cs" Exclude="../../src/Sanierungsplaner.Desktop/Services/IncomingRepaymentEditor.cs" Link="Services/%(Filename)%(Extension)" />
+ <Compile Include="../../src/Sanierungsplaner.Desktop/Services/JsonProjectStore.cs" Link="Services/JsonProjectStore.cs" />
+ <Compile Include="../../src/Sanierungsplaner.Desktop/Services/CostItemMatching.cs" Link="Services/CostItemMatching.cs" />
+ <Compile Include="../../src/Sanierungsplaner.Android/NativeEditors.cs" Link="NativeEditors.cs" />
+ </ItemGroup>
+</Project>
