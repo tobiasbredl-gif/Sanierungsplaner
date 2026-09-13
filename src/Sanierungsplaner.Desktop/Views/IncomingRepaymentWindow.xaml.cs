@@ -7,10 +7,10 @@ namespace Sanierungsplaner.Desktop.Views;
 public partial class IncomingRepaymentWindow : Window
 {
     public IncomingRepayment? Result { get; private set; }
-    public IncomingRepaymentWindow()
+    public IncomingRepaymentWindow(string? payer = null)
     {
         InitializeComponent();
-        DataContext = new IncomingRepaymentDraft();
+        DataContext = new IncomingRepaymentDraft { Payer = payer ?? "Lea" };
     }
     private void Apply(object sender, RoutedEventArgs args)
     {

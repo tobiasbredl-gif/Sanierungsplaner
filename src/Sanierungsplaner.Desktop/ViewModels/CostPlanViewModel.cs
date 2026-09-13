@@ -39,7 +39,7 @@ public sealed class CostPlanViewModel : INotifyPropertyChanged
             p => p is PersonTotal person && person.Person != "Tobias" && People.First(r => r.Person == person.Person).Amount > 0);
         ReverseCommand = new RelayCommand(p => Reverse((Reimbursement)p!),
             p => p is Reimbursement entry && entry.ReversesId is null && !Reimbursements.Any(r => r.ReversesId == entry.Id));
-        AddIncomingCommand = new RelayCommand(RecordIncoming);
+        AddIncomingCommand = new RelayCommand(() => RecordIncoming()); PayTobiasCommand = new RelayCommand(p => RecordIncoming(((PersonTotal)p!).Person), p => p is PersonTotal person && IncomingRepayment.Payers.Contains(person.Person));
         ReverseIncomingCommand = new RelayCommand(p => ReverseIncoming((IncomingRepayment)p!), p => p is IncomingRepayment entry && entry.ReversesId is null && !IncomingRepayments.Any(r => r.ReversesId == entry.Id));
         AddCreditCommand = new RelayCommand(RecordCredit);
         ReverseCreditCommand = new RelayCommand(p => ReverseCredit((SalesCredit)p!),
@@ -49,6 +49,7 @@ public sealed class CostPlanViewModel : INotifyPropertyChanged
     public decimal IncomingTotal => IncomingRepayments.Sum(r => r.EffectiveAmount);
     public string IncomingTotalLabel => CostItem.Money(IncomingTotal);
     public IReadOnlyList<IncomingRepayment> IncomingHistory => IncomingRepayments.Reverse().ToArray();
+    public RelayCommand PayTobiasCommand { get; }
     public RelayCommand AddIncomingCommand { get; }
     public RelayCommand ReverseIncomingCommand { get; }
     public ObservableCollection<CostItem> Items { get; } = [];
@@ -200,9 +201,9 @@ public sealed class CostPlanViewModel : INotifyPropertyChanged
         try { SalesCredit.ValidateLedger(credits.ToArray()); return true; }
         catch (InvalidDataException error) { Error = error.Message; Notice = ""; Notify(); return false; }
     }
-    private void RecordIncoming()
+    private void RecordIncoming(string? payer = null)
     {
-        var credit = _incoming.Record();
+        var credit = _incoming.Record(payer);
         if (credit is null) return;
         if (credit.ReversesId is not null || !CheckIncoming(IncomingRepayments.Append(credit))) return;
         IncomingRepayments.Add(credit);

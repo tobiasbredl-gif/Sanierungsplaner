@@ -10,7 +10,7 @@
         </WrapPanel>
         <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="0,0,12,0">
             <TextBlock Text="Rückzahlung an Tobias" FontSize="24" FontWeight="SemiBold" />
-            <TextBlock Text="Senkt die Nettoausgaben von Tobias. Die Ausgaben der zahlenden Person bleiben unverändert." Foreground="#596B62" Margin="0,12,0,20" />
+            <TextBlock Text="Deinen Anteil an Tobias erfassen, auch bei 0 € offen. Nur die Nettoausgaben von Tobias sinken; deine bisherigen Ausgaben bleiben unverändert." Foreground="#596B62" Margin="0,12,0,20" />
             <TextBlock Text="Beschreibung *" />
             <TextBox x:Name="DescriptionInput" Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" MaxLength="200" Padding="10,8" Margin="0,6,0,16" AutomationProperties.Name="Beschreibung der Rückzahlung" />
             <TextBlock Text="Erhaltener Betrag (€) *" />

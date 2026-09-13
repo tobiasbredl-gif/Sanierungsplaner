@@ -20,6 +20,13 @@ internal static partial class Program
         }
         Check(model.IncomingTotal == 60 && model.People.Last().Amount == 140 && model.Total == 500 && model.NetPaid == 440, "Nur Tobias entlastet, Einkauf unverändert");
         Check(model.People.Sum(p => p.Amount) == model.NetPaid && model.IsDirty, "Personensumme und Speicherschutz");
+        var contribution = new CostPlanViewModel(new TestCostEditor(), () => {}, incoming: editor);
+        contribution.Reset(project with { Items = [item with { UnitPrice = 4000, Payments = new Payments(Tobias: 4000) }] });
+        var lea = contribution.People.First(p => p.Person == "Lea");
+        editor.Next = new IncomingRepayment(Guid.NewGuid(), "Kostenanteil", "Lea", 1000, DateOnly.FromDateTime(DateTime.Today), now, "");
+        Check(lea.Amount == 0 && contribution.PayTobiasCommand.CanExecute(lea), "Kostenanteil auch bei null offen möglich");
+        contribution.PayTobiasCommand.Execute(lea);
+        Check(contribution.People.First().Amount == 0 && contribution.People.First().IncomingByPerson == 1000 && contribution.People.Last().Amount == 3000 && contribution.Total == 4000, "4000 minus Leas 1000 ohne Belastung von Lea");
         var store = new JsonProjectStore(folder);
         project = project with { IncomingRepayments = model.IncomingRepayments.ToArray() };
         store.Save(project, null);
@@ -42,7 +49,7 @@ internal static partial class Program
     private sealed class TestIncomingEditor : IIncomingRepaymentEditor
     {
         public IncomingRepayment? Next { get; set; }
-        public IncomingRepayment? Record() => Next;
+        public IncomingRepayment? Record(string? payer = null) => Next;
         public bool ConfirmReversal(IncomingRepayment entry) => true;
     }
 }

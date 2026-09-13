@@ -1,6 +1,6 @@
 # Sanierungsplaner
 
-Native Windows-Desktop-App mit C# und WPF auf .NET 10. Version 0.8.0 bietet lokale Projekte, automatisch zusammengefasste Einkäufe mit Datum protokollierte Rückzahlungen von Tobias an Lea, Wolfgang und Jennifer sowie Verkaufsgutschriften und automatische Zahlungsbeträge.
+Native Windows-Desktop-App mit C# und WPF auf .NET 10. Version 0.8.1 bietet lokale Projekte, automatisch zusammengefasste Einkäufe mit Datum protokollierte Rückzahlungen von Tobias an Lea, Wolfgang und Jennifer sowie Verkaufsgutschriften und automatische Zahlungsbeträge.
 
 ## Ein Projekt anlegen
 
@@ -151,3 +151,5 @@ Die zusätzliche Spalte **Rückzahlungen an Tobias** zeigt je Person deren gelei
 Diese Rückzahlungen reduzieren ausschließlich Tobias' Nettoausgaben. Die Ausgaben der zahlenden Person bleiben ausdrücklich unverändert. Beispiel: Tobias 200 €, Lea 100 €; Lea zahlt 20 € an Tobias zurück. Danach Tobias 180 €, Lea weiterhin 100 €, separate Spalte Lea 20 €. Originale Einkäufe, kalkulierte Kosten und offene Einkaufszahlungen verändern sich nicht. Die Nettoausgaben des Projekts sinken und das verfügbare Budget steigt um die Rückzahlung. Größere Einnahmen können einen Überschuss ergeben.
 
 Das Protokoll erhält Originale und Korrekturen als zusätzliche Stornos. Gespeicherte Einträge lassen sich nicht überschreiben oder entfernen. Frühere Projekte starten mit leerem Protokoll. Speichern aktualisiert auf Dateiformat 6; anschließend mindestens Version 0.8 verwenden.
+
+Bei Lea, Wolfgang und Jennifer öffnet **An Tobias zahlen** direkt die Erfassung ihres Kostenanteils, auch bei 0 € offen. Die Spalte **An Tobias bezahlt** zeigt ihre bisherigen Beiträge. Beispiel: Tobias bezahlt 4.000 €, Lea zahlt 1.000 € dazu: Tobias trägt netto 3.000 €, Lea bleibt bei 0 € offen und hat separat 1.000 € an Tobias bezahlt. Der Button Zurückzahlen bleibt für Erstattungen von Tobias an die jeweilige Person.

@@ -6,9 +6,9 @@ namespace Sanierungsplaner.Desktop.Services;
 
 public sealed class IncomingRepaymentEditor : IIncomingRepaymentEditor
 {
-    public IncomingRepayment? Record()
+    public IncomingRepayment? Record(string? payer = null)
     {
-        var dialog = new IncomingRepaymentWindow { Owner = Application.Current.MainWindow };
+        var dialog = new IncomingRepaymentWindow(payer) { Owner = Application.Current.MainWindow };
         return dialog.ShowDialog() == true ? dialog.Result : null;
     }
     public bool ConfirmReversal(IncomingRepayment entry) => MessageBox.Show(Application.Current.MainWindow,

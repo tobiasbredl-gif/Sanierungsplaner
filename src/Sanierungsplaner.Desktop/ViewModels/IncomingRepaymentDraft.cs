@@ -6,7 +6,7 @@ namespace Sanierungsplaner.Desktop.ViewModels;
 
 public sealed class IncomingRepaymentDraft : INotifyPropertyChanged
 {
-    public string Description { get; set; } = "Rückzahlung an Tobias";
+    public string Description { get; set; } = "Kostenanteil an Tobias";
     public string Payer { get; set; } = "Lea";
     public IReadOnlyList<string> Payers => IncomingRepayment.Payers;
     public string AmountText { get; set; } = "0,00";

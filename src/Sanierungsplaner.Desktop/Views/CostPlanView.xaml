@@ -25,7 +25,10 @@
                                     <TextBlock Text="{Binding AmountCaption}" FontSize="11" HorizontalAlignment="Right" />
                                     <TextBlock Text="{Binding AmountLabel}" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Right" />
                                 </StackPanel>
-                                <StackPanel Grid.Column="2" Margin="8,0" VerticalAlignment="Center"><TextBlock Text="Rückzahlungen an Tobias" TextWrapping="Wrap" FontSize="11" /><TextBlock Text="{Binding IncomingLabel}" FontSize="18" FontWeight="SemiBold" /></StackPanel>
+                                <StackPanel Grid.Column="2" Margin="8,0" VerticalAlignment="Center"><TextBlock Text="An Tobias bezahlt" TextWrapping="Wrap" FontSize="11" /><TextBlock Text="{Binding IncomingLabel}" FontSize="18" FontWeight="SemiBold" />
+<Button Content="An Tobias zahlen" Command="{Binding DataContext.PayTobiasCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Padding="5,4" MinHeight="30" FontSize="11" Margin="0,8,0,0">
+<Button.Style><Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}"><Style.Triggers><DataTrigger Binding="{Binding Person}" Value="Tobias"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers></Style></Button.Style>
+</Button></StackPanel>
                                     <Button Grid.Column="3" Content="Zurückzahlen" Command="{Binding DataContext.ReimburseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Padding="8,4" MinHeight="30" FontSize="12" Margin="12,0,0,0" VerticalAlignment="Center">
                                         <Button.Style><Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}"><Style.Triggers><DataTrigger Binding="{Binding Person}" Value="Tobias"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers></Style></Button.Style>
                                     </Button>

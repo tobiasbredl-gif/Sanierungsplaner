@@ -5,7 +5,7 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>Sanierungsplaner</AssemblyName>
     <RootNamespace>Sanierungsplaner.Desktop</RootNamespace>
-    <Version>0.8.0</Version>
+    <Version>0.8.1</Version>
     <Description>Windows-Desktop-App zur lokalen Verwaltung von Sanierungsprojekten</Description>
   </PropertyGroup>
 </Project>
