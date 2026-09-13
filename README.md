@@ -1,6 +1,6 @@
 # Sanierungsplaner
 
-Native Windows-Desktop-App mit C# und WPF auf .NET 10. Version 0.2.0 bietet eine lokale Projektverwaltung mit deutschem Startfenster.
+Native Windows-Desktop-App mit C# und WPF auf .NET 10. Version 0.3.0 bietet lokale Projekte, eine gemeinsame Kostenliste und eine Ausgabenübersicht mit je einer Zeile für Lea, Wolfgang, Jennifer und Tobias.
 
 ## Ein Projekt anlegen
 
@@ -10,6 +10,26 @@ Native Windows-Desktop-App mit C# und WPF auf .NET 10. Version 0.2.0 bietet eine
 4. Ein gespeichertes Projekt mit **Projekt öffnen** weiterbearbeiten.
 
 Die Projekte werden beim nächsten App-Start wieder geladen. Beim Verlassen eines bearbeiteten Projekts oder Schließen der App kann man Änderungen speichern, verwerfen oder weiterbearbeiten. Der Wechsel zu **Über die App** erhält den aktuellen Entwurf; **Projekte** führt zu ihm zurück.
+
+## Kosten und Zahlungen erfassen
+
+1. Ein Projekt öffnen und **Kosten & Zahlungen** auswählen.
+2. Über **Position hinzufügen** Material/Beschreibung, Menge, Einheit und Einzelpreis erfassen. Raum und Etage sind optional. Es gibt keine Kategorien oder Unterteilung nach Gewerken.
+3. Den Status **Geplant**, **Gekauft** oder **Verbaut** wählen.
+4. Bereits gezahlte Beträge in den vier Personenzeilen eintragen; für alle anderen steht dort 0,00. Teilzahlungen und mehrere Zahlende pro Position sind möglich.
+5. **Position übernehmen**, anschließend **Projekt speichern** anklicken. Übernehmen allein sichert noch nicht auf der Festplatte.
+
+Die vier Summenzeilen bleiben auch bei 0,00 € sichtbar. Jede Position lässt sich bearbeiten oder nach Rückfrage entfernen. Geplante Positionen dürfen noch keine Zahlungen enthalten. Gekauft/Verbaut bedeutet nicht automatisch bezahlt: Dafür zählen ausschließlich die eingetragenen Zahlungen. Eine Zahlung über den Positionskosten wird abgewiesen.
+
+Unter **Budget und Gesamtkosten** lässt sich das Projektbudget eintragen. Alle Werte sind Eurobeträge; Zahlen mit Dezimalkomma und ohne Tausendertrennzeichen eingeben. Beträge haben maximal zwei, Mengen maximal drei Nachkommastellen. Mengen und Einzelpreise sind auf 1.000.000 begrenzt, das Budget auf 1.000.000.000 €. Eine Kostenposition wird als Menge × Einzelpreis kaufmännisch auf Cent gerundet.
+
+- **Kalkulierte Kosten:** Summe aller Positionen, unabhängig vom Status.
+- **Tatsächlich bezahlt:** Summe der vier Personenzahlungen.
+- **Noch zu bezahlen:** Kalkulierte Kosten minus Zahlungen; enthält auch geplante Anschaffungen.
+- **Restbudget:** Budget minus Zahlungen.
+- **Budget minus kalkulierte Kosten:** Verbleibender Spielraum in der Planung; negative Werte zeigen eine Überschreitung.
+
+Es gibt keine automatische Aufteilung der Kosten oder Berechnung von Schulden untereinander. Die Übersicht zeigt, wer tatsächlich bezahlt hat.
 
 ## Voraussetzungen
 
@@ -61,7 +81,9 @@ docs/                      Architektur und Umfang
 
 ## Umfang dieser Version
 
-Enthalten sind Projektname (Pflichtfeld, maximal 120 Zeichen), Objektadresse (300 Zeichen), Notizen (10.000 Zeichen), Anlege- und Änderungszeitpunkt sowie eine nach letzter Änderung sortierte Projektübersicht. Maßnahmen, Kostenberechnung, Löschen, Import/Export und Cloud-Synchronisierung sind noch nicht implementiert.
+Enthalten sind Projektname (Pflichtfeld, maximal 120 Zeichen), Objektadresse (300 Zeichen), Notizen (10.000 Zeichen), Zeitstempel und Kostenpositionen samt Zahlungen und Budget. Excel-Export, Auswertungen nach Raum/Etage, Android-App und abgesicherte WLAN-Synchronisierung folgen in weiteren Schritten. Die abgestimmten Anforderungen stehen in [docs/product-requirements.md](docs/product-requirements.md).
+
+Bestehende Projekte aus v0.2 werden mit Budget 0 und leerer Kostenliste geöffnet. Erst beim Speichern wird auf Dateiformat 2 aktualisiert; danach benötigen sie mindestens App-Version 0.3. Die bisherige Version 0.2 verweigert das unbekannte Format, anstatt Kosteninformationen zu überschreiben.
 
 ## Lokale Daten und Sicherung
 

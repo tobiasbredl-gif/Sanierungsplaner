@@ -16,10 +16,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private bool _showAbout, _isEditing, _loadFailed;
     private string _name = "", _address = "", _notes = "", _error = "", _status = "";
 
-    public MainWindowViewModel(IProjectStore store, IUnsavedChangesPrompt prompt)
+    public MainWindowViewModel(IProjectStore store, IUnsavedChangesPrompt prompt, ICostItemEditor? costEditor = null)
     {
         _store = store;
         _prompt = prompt;
+        CostPlan = new CostPlanViewModel(costEditor ?? new CostItemEditor(), () => DraftChanged(nameof(CostPlan)));
         ShowHomeCommand = new RelayCommand(() => { _showAbout = false; NotifyView(); });
         ShowAboutCommand = new RelayCommand(() => { _showAbout = true; NotifyView(); });
         NewProjectCommand = new RelayCommand(() => { if (CanLeaveEditor()) Edit(null); }, () => !_loadFailed);
@@ -31,6 +32,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     }
 
     public ObservableCollection<RenovationProject> Projects { get; } = [];
+    public CostPlanViewModel CostPlan { get; }
     public string StoragePath => _store.FolderPath;
     public bool ShowAbout => _showAbout;
     public bool IsEditing => _isEditing;
@@ -39,15 +41,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public bool IsEmpty => Projects.Count == 0 && !_loadFailed;
     public string ProjectCount => Projects.Count == 1 ? "1 gespeichertes Projekt" : $"{Projects.Count} gespeicherte Projekte";
     public string PageTitle => ShowAbout ? "Deine Pläne. Lokal gespeichert." : IsEditing ? (_original is null ? "Ein neues Projekt." : "Dein Projekt im Detail.") : "Raum für deine Pläne.";
-    public string PageDescription => ShowAbout ? "Sanierungsplaner · Version 0.2.0"
+    public string PageDescription => ShowAbout ? "Sanierungsplaner · Version 0.3.0"
         : IsEditing ? "Erfasse die Grundlagen für deine Sanierung. Du kannst alle Angaben später ändern."
         : "Alle Sanierungsvorhaben an einem Ort. Lege ein Projekt an oder arbeite an einem bestehenden weiter.";
     public string Name { get => _name; set { _name = value; DraftChanged(); } }
     public string Address { get => _address; set { _address = value; DraftChanged(); } }
     public string Notes { get => _notes; set { _notes = value; DraftChanged(); } }
-    public bool IsDirty => IsEditing && (_original is null
+    public bool IsDirty => IsEditing && (CostPlan.IsDirty || (_original is null
         ? Name.Length > 0 || Address.Length > 0 || Notes.Length > 0
-        : Name != _original.Name || Address != _original.Address || Notes != _original.Notes);
+        : Name != _original.Name || Address != _original.Address || Notes != _original.Notes));
     public string DraftStatus => IsDirty ? "Ungespeicherte Änderungen" : _original is null ? "Noch nicht gespeichert" : _original.UpdatedLabel;
     public string Error { get => _error; private set { _error = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasError)); } }
     public bool HasError => Error.Length > 0;
@@ -98,6 +100,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         _name = project?.Name ?? "";
         _address = project?.Address ?? "";
         _notes = project?.Notes ?? "";
+        CostPlan.Reset(project);
         _isEditing = true;
         _showAbout = false;
         Error = "";
@@ -116,8 +119,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             return false;
         }
         var now = DateTimeOffset.UtcNow;
+        if (!CostPlan.TryBudget(out var budget))
+        {
+            Error = CostPlan.BudgetError;
+            return false;
+        }
         var project = new RenovationProject(_original?.Id ?? Guid.NewGuid(), Guid.NewGuid(),
-            Name.Trim(), Address.Trim(), Notes.Trim(), _original?.CreatedAt ?? now, now);
+            Name.Trim(), Address.Trim(), Notes.Trim(), _original?.CreatedAt ?? now, now)
+        { Budget = budget, Items = CostPlan.Items.ToArray() };
         try
         {
             _store.Save(project, _original?.Revision);

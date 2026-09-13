@@ -32,7 +32,7 @@ public sealed class JsonProjectStore(string folderPath) : IProjectStore
         {
             using (var stream = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             {
-                JsonSerializer.Serialize(stream, new ProjectDocument(1, project), Options);
+                JsonSerializer.Serialize(stream, new ProjectDocument(2, project), Options);
                 stream.Flush(flushToDisk: true);
             }
             // The original remains untouched until the complete new document has been flushed.
@@ -53,7 +53,7 @@ public sealed class JsonProjectStore(string folderPath) : IProjectStore
         try
         {
             var document = JsonSerializer.Deserialize<ProjectDocument>(File.ReadAllText(path));
-            if (document is not { SchemaVersion: 1, Project: not null })
+            if (document is not { SchemaVersion: 1 or 2, Project: not null })
                 throw new InvalidDataException("Unbekanntes Projektformat.");
             document.Project.Validate();
             if (Path.GetFileNameWithoutExtension(path) != document.Project.Id.ToString("D"))

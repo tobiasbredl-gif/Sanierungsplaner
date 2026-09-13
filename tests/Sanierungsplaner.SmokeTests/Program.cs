@@ -1,4 +1,6 @@
 using System.IO;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
@@ -22,8 +24,9 @@ internal static class Program
         {
             TestPersistence(Path.Combine(testRoot, "storage"));
             TestEditing(Path.Combine(testRoot, "editing"));
+            TestCosts(Path.Combine(testRoot, "costs"));
             TestWindow(Path.Combine(testRoot, "window"), args.FirstOrDefault());
-            Console.WriteLine("PASS: Speicherung, Wiederöffnen, Validierung, Konflikte, Fehlerfälle, Entwurfsschutz und WPF-Oberfläche.");
+            Console.WriteLine("PASS: Speicherung, Kosten, vier Personensummen, Teilzahlungen, Migration, Fehlerfälle, Entwurfsschutz und WPF-Oberfläche.");
             return 0;
         }
         catch (Exception exception)
@@ -44,14 +47,14 @@ internal static class Program
         var now = DateTimeOffset.UtcNow;
         var first = new RenovationProject(Guid.NewGuid(), Guid.NewGuid(), "Haus am See", "Seestraße 12, 80331 München", "Dach prüfen.\nFenster erneuern.", now, now);
         store.Save(first, null);
-        Check(new JsonProjectStore(folder).Load().Single() == first, "JSON-Roundtrip einschließlich Umlauten und Zeilenumbrüchen");
+        Check(Same(new JsonProjectStore(folder).Load().Single(), first), "JSON-Roundtrip einschließlich Umlauten und Zeilenumbrüchen");
         var updated = first with { Revision = Guid.NewGuid(), Name = "Haus am See · Umbau", UpdatedAt = now.AddMinutes(1) };
         store.Save(updated, first.Revision);
         Expect<IOException>(() => store.Save(first, first.Revision));
-        Check(store.Load().Single() == updated, "Konflikt darf vorhandene Daten nicht ersetzen");
+        Check(Same(store.Load().Single(), updated), "Konflikt darf vorhandene Daten nicht ersetzen");
         using (var guard = new FileStream(Path.Combine(folder, ".write.lock"), FileMode.Open, FileAccess.ReadWrite, FileShare.None))
             Expect<IOException>(() => store.Save(updated with { Revision = Guid.NewGuid() }, updated.Revision));
-        Check(store.Load().Single() == updated, "Dateisperre erhält bestehende Daten");
+        Check(Same(store.Load().Single(), updated), "Dateisperre erhält bestehende Daten");
         Expect<InvalidDataException>(() => store.Save(first with { Name = " " }, null));
         var file = Path.Combine(folder, $"{first.Id:D}.json");
         var valid = File.ReadAllText(file);
@@ -59,9 +62,18 @@ internal static class Program
         Expect<InvalidDataException>(() => store.Load());
         Expect<InvalidDataException>(() => store.Save(updated, updated.Revision));
         Check(File.ReadAllText(file) == "{kaputt", "Beschädigte Datei bleibt erhalten");
-        File.WriteAllText(file, valid.Replace("\"SchemaVersion\": 1", "\"SchemaVersion\": 99"));
+        File.WriteAllText(file, valid.Replace("\"SchemaVersion\": 2", "\"SchemaVersion\": 99"));
         Expect<InvalidDataException>(() => store.Load());
         File.WriteAllText(file, valid);
+        var legacy = JsonNode.Parse(valid)!;
+        legacy["SchemaVersion"] = 1;
+        legacy["Project"]!.AsObject().Remove("Items");
+        legacy["Project"]!.AsObject().Remove("Budget");
+        File.WriteAllText(file, legacy.ToJsonString());
+        var migrated = store.Load().Single();
+        Check(migrated.Budget == 0 && migrated.Items.Length == 0 && migrated.Name == updated.Name, "Bestehendes v0.2-Projekt wird verlustfrei geladen");
+        store.Save(migrated with { Revision = Guid.NewGuid() }, migrated.Revision);
+        Check(JsonNode.Parse(File.ReadAllText(file))!["SchemaVersion"]!.GetValue<int>() == 2, "Migration schreibt neues Format erst beim Speichern");
         Check(!Directory.EnumerateFiles(folder, "*.tmp").Any(), "Keine temporären Dateien nach erfolgreichem Speichern");
     }
 
@@ -136,9 +148,10 @@ internal static class Program
         if (screenshot is not null) Capture(window, screenshot);
         model.ShowAboutCommand.Execute(null);
         Pump(window);
-        Check(model.ShowAbout && model.PageDescription.Contains("0.2.0"), "App-Information");
+        Check(model.ShowAbout && model.PageDescription.Contains("0.3.0"), "App-Information");
         model.ShowHomeCommand.Execute(null);
         model.OpenProjectCommand.Execute(model.Projects.Single());
+        TestCostWindow(window, screenshot);
         window.Width = window.MinWidth;
         window.Height = window.MinHeight;
         Pump(window);
@@ -150,6 +163,101 @@ internal static class Program
         model.Name = "Altbau am Stadtpark";
         window.Close();
         app.Shutdown();
+    }
+
+    private static bool Same(RenovationProject left, RenovationProject right)
+        => JsonSerializer.Serialize(left) == JsonSerializer.Serialize(right);
+
+    private static CostItem Sample() => new(Guid.NewGuid(), "Materiallieferung", "EG", "Wohnzimmer", 10, "m²", 12.50m, "Gekauft", new Payments(25, 40, 10, 0));
+
+    private static void TestCosts(string folder)
+    {
+        var sample = Sample();
+        sample.Validate();
+        Check(sample.Total == 125 && sample.Payments.Total == 75 && sample.Outstanding == 50, "Teilzahlungen und offene Kosten");
+        Check((sample with { Quantity = 0.333m, UnitPrice = 0.50m }).Total == 0.17m, "Kaufmännische Rundung auf Cent");
+        Expect<InvalidDataException>(() => (sample with { Payments = new Payments(126) }).Validate());
+        Expect<InvalidDataException>(() => (sample with { Status = "Geplant" }).Validate());
+        Expect<InvalidDataException>(() => (sample with { Payments = new Payments(-1) }).Validate());
+        Expect<InvalidDataException>(() => (sample with { Payments = new Payments(1.001m) }).Validate());
+        var draft = new CostItemDraft(sample);
+        draft["UnitPrice"] = "12,50";
+        Check(draft.Build() == sample, "Deutsches Dezimalkomma und stabile Position-ID");
+        draft["UnitPrice"] = "12.50";
+        Check(draft.Build() is null, "Punkt wird nicht als Tausenderzeichen fehlinterpretiert");
+        var editor = new TestCostEditor { Next = sample };
+        var model = new MainWindowViewModel(new JsonProjectStore(folder), new TestPrompt(), editor);
+        model.NewProjectCommand.Execute(null);
+        model.Name = "Kostenprojekt";
+        model.CostPlan.BudgetText = "200,00";
+        model.CostPlan.AddCommand.Execute(null);
+        Check(model.CostPlan.People.Select(p => p.Person).SequenceEqual(new[] { "Lea", "Wolfgang", "Jennifer", "Tobias" }), "Alle vier Personen, auch ohne Zahlung");
+        Check(model.CostPlan.People.Select(p => p.Amount).SequenceEqual(new decimal[] { 25, 40, 10, 0 }), "Summen je Person");
+        Check(model.CostPlan.RemainingLabel == CostItem.Money(125) && model.CostPlan.ForecastLabel == CostItem.Money(75), "Budget und Prognose getrennt");
+        model.SaveProjectCommand.Execute(null);
+        Check(!model.HasError && !model.IsDirty, "Kostenprojekt gespeichert");
+        editor.Next = sample with { Payments = new Payments(25, 40, 10, 50), Status = "Verbaut" };
+        model.CostPlan.EditCommand.Execute(model.CostPlan.Items.Single());
+        Check(model.IsDirty && model.CostPlan.Items.Count == 1 && model.CostPlan.Paid == 125, "Bearbeiten ersetzt ohne Doppelzählung");
+        model.SaveProjectCommand.Execute(null);
+        var loaded = new JsonProjectStore(folder).Load().Single();
+        Check(loaded.Items.Single().Payments.Tobias == 50 && loaded.Budget == 200, "Zahlungen bleiben nach erneutem Laden erhalten");
+        editor.Next = null;
+        model.CostPlan.AddCommand.Execute(null);
+        Check(!model.IsDirty && model.CostPlan.Items.Count == 1, "Dialogabbruch verändert nichts");
+        model.CostPlan.BudgetText = "50,00";
+        Check(model.CostPlan.RemainingLabel == CostItem.Money(-75), "Budgetüberschreitung sichtbar");
+        model.CostPlan.BudgetText = "ungültig";
+        model.SaveProjectCommand.Execute(null);
+        Check(model.HasError && new JsonProjectStore(folder).Load().Single().Budget == 200, "Ungültiges Budget verändert gespeicherte Daten nicht");
+        model.CostPlan.RemoveCommand.Execute(model.CostPlan.Items.Single());
+        Check(model.CostPlan.Items.Count == 1, "Abgebrochenes Entfernen behält Position");
+        editor.AllowRemoval = true;
+        model.CostPlan.RemoveCommand.Execute(model.CostPlan.Items.Single());
+        Check(model.CostPlan.Paid == 0 && model.CostPlan.People.All(p => p.Amount == 0) && model.IsDirty, "Entfernen aktualisiert alle Personensummen");
+    }
+
+    private static void TestCostWindow(Window owner, string? screenshot)
+    {
+        var dialog = new CostItemWindow(null) { Owner = owner };
+        Exception? failure = null;
+        dialog.Loaded += (_, _) => dialog.Dispatcher.BeginInvoke(() =>
+        {
+            try
+            {
+                ((TextBox)dialog.FindName("MaterialInput")).Text = "Materiallieferung";
+                ((TextBox)dialog.FindName("QuantityInput")).Text = "10";
+                ((TextBox)dialog.FindName("PriceInput")).Text = "12,50";
+                ((ComboBox)dialog.FindName("StatusInput")).SelectedItem = "Gekauft";
+                ((TextBox)dialog.FindName("LeaInput")).Text = "25,00";
+                ((TextBox)dialog.FindName("WolfgangInput")).Text = "40,00";
+                ((TextBox)dialog.FindName("JenniferInput")).Text = "10,00";
+                ((TextBox)dialog.FindName("TobiasInput")).Text = "50,00";
+                Pump(dialog);
+                if (screenshot is not null) Capture(dialog, Path.ChangeExtension(screenshot, ".position.png"));
+                Click(dialog, "ApplyButton");
+            }
+            catch (Exception error) { failure = error; dialog.DataContext = new CostItemDraft(null); dialog.Hide(); }
+        });
+        dialog.ShowDialog();
+        if (failure is not null) throw failure;
+        Check(dialog.Result?.Total == 125 && dialog.Result.Payments.Total == 125, "Kostenformular vollständig über WPF bedient");
+        var model = (MainWindowViewModel)owner.DataContext;
+        model.CostPlan.Items.Add(dialog.Result!);
+        model.CostPlan.BudgetText = "200,00";
+        model.SaveProjectCommand.Execute(null);
+        ((TabControl)owner.FindName("ProjectTabs")).SelectedIndex = 1;
+        Pump(owner);
+        if (screenshot is not null) Capture(owner, Path.ChangeExtension(screenshot, ".costs.png"));
+        ((TabControl)owner.FindName("ProjectTabs")).SelectedIndex = 0;
+        Pump(owner);
+    }
+    private sealed class TestCostEditor : ICostItemEditor
+    {
+        public CostItem? Next { get; set; }
+        public CostItem? Edit(CostItem? existing) => Next;
+        public bool AllowRemoval { get; set; }
+        public bool ConfirmRemoval(CostItem existing) => AllowRemoval;
     }
 
     private static void Click(Window window, string name)

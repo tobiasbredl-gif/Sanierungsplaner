@@ -1,6 +1,7 @@
 <Window x:Class="Sanierungsplaner.Desktop.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="clr-namespace:Sanierungsplaner.Desktop.Views"
         Title="Sanierungsplaner" Width="1120" Height="820" Style="{StaticResource {x:Type Window}}"
         MinWidth="780" MinHeight="580" WindowStartupLocation="CenterScreen" Language="de-DE">
     <Window.Resources>
@@ -36,7 +37,7 @@
                 </StackPanel>
                 <StackPanel DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
                     <TextBlock Text="WINDOWS DESKTOP" Foreground="#BDD0C8" FontSize="11" />
-                    <TextBlock Text="Projektverwaltung · 0.2.0" Foreground="White" Margin="0,6,0,0" />
+                    <TextBlock Text="Kostenübersicht · 0.3.0" Foreground="White" Margin="0,6,0,0" />
                 </StackPanel>
             </DockPanel>
         </Border>
@@ -48,6 +49,10 @@
                 </Border>
             </Grid>
             <TextBlock DockPanel.Dock="Bottom" Text="{Binding Status}" Foreground="#176B56" FontSize="12" Margin="0,16,0,0" AutomationProperties.LiveSetting="Polite" />
+            <WrapPanel DockPanel.Dock="Bottom" Margin="0,12,0,0" Visibility="{Binding ShowEditor, Converter={StaticResource VisibleWhenTrue}}">
+                <Button x:Name="SaveProjectButton" Content="Projekt _speichern" Command="{Binding SaveProjectCommand}" Margin="0,0,16,8" />
+                <TextBlock Text="{Binding DraftStatus}" VerticalAlignment="Center" Foreground="#596B62" FontSize="12" Margin="0,0,0,8" />
+            </WrapPanel>
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                 <StackPanel>
                     <TextBlock Text="{Binding PageTitle}" FontSize="32" FontWeight="SemiBold" Margin="0,0,0,12" />
@@ -84,6 +89,8 @@
                     </StackPanel>
                     <StackPanel Visibility="{Binding ShowEditor, Converter={StaticResource VisibleWhenTrue}}">
                         <Button Content="← Alle Projekte" Command="{Binding BackCommand}" HorizontalAlignment="Left" Style="{StaticResource SecondaryButton}" Margin="0,0,0,16" />
+                        <TabControl x:Name="ProjectTabs" Background="Transparent" BorderThickness="0" Padding="0,16,0,0">
+                            <TabItem Header="Projektdaten" Padding="16,10">
                         <Border Style="{StaticResource Card}">
                             <StackPanel>
                                 <Label Content="Projekt_name *" Target="{Binding ElementName=ProjectName}" Padding="0" Margin="0,0,0,8" />
@@ -93,21 +100,20 @@
                                 <Label Content="Noti_zen" Target="{Binding ElementName=ProjectNotes}" Padding="0" Margin="0,20,0,8" />
                                 <TextBox x:Name="ProjectNotes" Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}" MaxLength="10000" AcceptsReturn="True" TextWrapping="Wrap" Height="130" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="Notizen" />
                                 <TextBlock Text="* Pflichtfeld · Adresse und Notizen sind optional." Foreground="#596B62" FontSize="12" Margin="0,12,0,20" />
-                                <WrapPanel>
-                                    <Button x:Name="SaveProjectButton" Content="Projekt _speichern" Command="{Binding SaveProjectCommand}" Margin="0,0,16,8" />
-                                    <TextBlock Text="{Binding DraftStatus}" VerticalAlignment="Center" Foreground="#596B62" FontSize="12" Margin="0,0,0,8" />
-                                </WrapPanel>
                             </StackPanel>
                         </Border>
+                            </TabItem>
+                            <TabItem Header="Kosten &amp; Zahlungen" Padding="16,10"><views:CostPlanView DataContext="{Binding CostPlan}" /></TabItem>
+                        </TabControl>
                     </StackPanel>
                     <Border Style="{StaticResource Card}" Visibility="{Binding ShowAbout, Converter={StaticResource VisibleWhenTrue}}">
                         <StackPanel>
                             <TextBlock Text="Ein Zuhause für deine Projekte." FontSize="22" FontWeight="SemiBold" Margin="0,0,0,12" />
-                            <TextBlock Text="Lege Projekte an und bearbeite Name, Objektadresse und Notizen. Gespeicherte Projekte stehen beim nächsten Start wieder bereit." Foreground="#596B62" LineHeight="24" />
+                            <TextBlock Text="Verwalte deine Projekte, kalkuliere Kosten und halte fest, was Lea, Wolfgang, Jennifer und Tobias bezahlt haben. Alles bleibt lokal gespeichert." Foreground="#596B62" LineHeight="24" />
                             <TextBlock Text="Dein Speicherordner" FontWeight="SemiBold" Margin="0,24,0,8" />
                             <TextBox Text="{Binding StoragePath, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" AutomationProperties.Name="Speicherordner" />
                             <TextBlock Text="Die Daten liegen als lesbare Dateien auf diesem Computer. Sichere diesen Ordner bei Bedarf. Es gibt noch keine Cloud-Synchronisierung oder automatische Sicherung." Foreground="#596B62" Margin="0,12,0,20" LineHeight="24" />
-                            <TextBlock Text="Als Nächstes: Maßnahmen und Kostenplanung." FontWeight="SemiBold" />
+                            <TextBlock Text="Weitere Ausbauschritte: Excel-Export und eine gekoppelte Android-App." FontWeight="SemiBold" />
                         </StackPanel>
                     </Border>
                 </StackPanel>
