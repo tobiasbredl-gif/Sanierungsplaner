@@ -180,6 +180,43 @@ internal static partial class Program
         ((TabControl)owner.FindName("ProjectTabs")).SelectedIndex = 0;
     }
 
+    private static void TestIncomingWindow(Window owner, string? screenshot)
+    {
+        var dialog = new IncomingRepaymentWindow { Owner = owner };
+        Exception? failure = null;
+        dialog.Loaded += (_, _) => dialog.Dispatcher.BeginInvoke(() =>
+        {
+            try
+            {
+                ((TextBox)dialog.FindName("DescriptionInput")).Text = "Übriges Material verkauft";
+                var amount = (TextBox)dialog.FindName("AmountInput");
+                amount.Focus();
+                Check(amount.SelectionLength == amount.Text.Length, "Gutschriftbetrag sofort überschreibbar");
+                amount.SelectedText = "80,00";
+                ((ComboBox)dialog.FindName("PayerInput")).SelectedItem = "Lea";
+                if (screenshot is not null) Capture(dialog, Path.ChangeExtension(screenshot, ".incoming-dialog.png"));
+                Click(dialog, "ApplyButton");
+            }
+            catch (Exception error) { failure = error; dialog.Hide(); }
+        });
+        dialog.ShowDialog();
+        if (failure is not null) throw failure;
+        Check(dialog.Result is { Amount: 80, Payer: "Lea" }, "Gutschrift im echten Windows-Formular");
+        var model = (MainWindowViewModel)owner.DataContext;
+        model.CostPlan.IncomingRepayments.Add(dialog.Result!);
+        model.CostPlan.BudgetText = "200,00";
+        model.SaveProjectCommand.Execute(null);
+        ((TabControl)owner.FindName("ProjectTabs")).SelectedIndex = 1;
+        Pump(owner);
+        var panel = Visuals<Expander>(owner).First(e => Equals(e.Header, "Rückzahlungen an Tobias"));
+        panel.IsExpanded = true;
+        Pump(owner);
+        panel.BringIntoView();
+        if (screenshot is not null) Capture(owner, Path.ChangeExtension(screenshot, ".incoming.png"));
+        Check(Visuals<TextBlock>(panel).Any(t => t.Text.StartsWith("+80")), "Gutschrift mit Pluszeichen im Protokoll");
+        ((TabControl)owner.FindName("ProjectTabs")).SelectedIndex = 0;
+    }
+
     private sealed class TestSalesCreditEditor : ISalesCreditEditor
     {
         public SalesCredit? Next { get; set; }

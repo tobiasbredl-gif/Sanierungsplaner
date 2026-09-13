@@ -1,6 +1,6 @@
 # Sanierungsplaner
 
-Native Windows-Desktop-App mit C# und WPF auf .NET 10. Version 0.7.0 bietet lokale Projekte, automatisch zusammengefasste Einkäufe mit Datum protokollierte Rückzahlungen von Tobias an Lea, Wolfgang und Jennifer sowie Verkaufsgutschriften und automatische Zahlungsbeträge.
+Native Windows-Desktop-App mit C# und WPF auf .NET 10. Version 0.8.0 bietet lokale Projekte, automatisch zusammengefasste Einkäufe mit Datum protokollierte Rückzahlungen von Tobias an Lea, Wolfgang und Jennifer sowie Verkaufsgutschriften und automatische Zahlungsbeträge.
 
 ## Ein Projekt anlegen
 
@@ -118,7 +118,7 @@ docs/                      Architektur und Umfang
 
 Enthalten sind Projektname (Pflichtfeld, maximal 120 Zeichen), Objektadresse (300 Zeichen), Notizen (10.000 Zeichen), Zeitstempel und Kostenpositionen samt Zahlungen und Budget. Excel-Export, Auswertungen nach Raum/Etage, Android-App und abgesicherte WLAN-Synchronisierung folgen in weiteren Schritten. Die abgestimmten Anforderungen stehen in [docs/product-requirements.md](docs/product-requirements.md).
 
-Bestehende Projekte aus v0.2, v0.3 und v0.4 werden weiterhin geladen. Fehlende Einkaufsdaten erscheinen als **Datum unbekannt (Altbestand)**; die App erfindet kein Datum. Bereits vorhandene gleiche Positionen werden in der Ansicht gruppiert, ihre ursprünglichen Einträge bleiben erhalten. Fehlende Rückzahlungen und Gutschriften beginnen als leeres Protokoll. Erst beim Speichern wird auf Dateiformat 5 aktualisiert; danach ist mindestens App-Version 0.6 erforderlich. Ältere App-Versionen verweigern das unbekannte Format, anstatt Informationen zu überschreiben.
+Bestehende Projekte aus v0.2, v0.3 und v0.4 werden weiterhin geladen. Fehlende Einkaufsdaten erscheinen als **Datum unbekannt (Altbestand)**; die App erfindet kein Datum. Bereits vorhandene gleiche Positionen werden in der Ansicht gruppiert, ihre ursprünglichen Einträge bleiben erhalten. Fehlende Rückzahlungen und Gutschriften beginnen als leeres Protokoll. Erst beim Speichern wird auf Dateiformat 6 aktualisiert; danach ist mindestens App-Version 0.8 erforderlich. Ältere App-Versionen verweigern das unbekannte Format, anstatt Informationen zu überschreiben.
 
 ## Lokale Daten und Sicherung
 
@@ -134,10 +134,20 @@ Weitere Entscheidungen stehen in [docs/architecture.md](docs/architecture.md). E
 
 ## Optionale Mehrwertsteuer
 
-Im Einkaufsformular ist **19 % MwSt. hinzufügen** standardmäßig ausgeschaltet. Bei Auswahl den Einzelpreis ohne Steuer eingeben. Menge × Einzelpreis wird auf Cent gerundet; darauf werden 19 % berechnet und ebenfalls auf Cent gerundet. Der Gesamtbetrag inklusive Steuer gilt für Budget, offene Beträge und Gesamtbetrag-Buttons. Beispiel: 100 € ergeben 119 €. Die Auswahl bleibt pro Einkauf gespeichert und im Verlauf sichtbar. Bestehende Einträge erhalten keinen automatischen Aufschlag. Das neue Dateiformat 5 verhindert, dass ältere App-Versionen die Steuer versehentlich ignorieren.
+Im Einkaufsformular ist **19 % MwSt. hinzufügen** standardmäßig ausgeschaltet. Bei Auswahl den Einzelpreis ohne Steuer eingeben. Menge × Einzelpreis wird auf Cent gerundet; darauf werden 19 % berechnet und ebenfalls auf Cent gerundet. Der Gesamtbetrag inklusive Steuer gilt für Budget, offene Beträge und Gesamtbetrag-Buttons. Beispiel: 100 € ergeben 119 €. Die Auswahl bleibt pro Einkauf gespeichert und im Verlauf sichtbar. Bestehende Einträge erhalten keinen automatischen Aufschlag. Das neue Dateiformat 6 verhindert, dass ältere App-Versionen die Steuer versehentlich ignorieren.
 
 ## Geplante Ausgaben
 
 Neben Projektdaten und Kosten & Zahlungen gibt es den Reiter **Geplante Ausgaben**. Neue Einträge dort starten mit Geplant; ein zukünftiges Datum ist zulässig. Die Summe enthält die optionale MwSt. und fließt in die Kalkulation ein, jedoch nicht in bezahlte Ausgaben. Die allgemeine Kostenliste enthält weiterhin alle Positionen.
 
 Beim tatsächlichen Kauf den vorhandenen Eintrag bearbeiten, das Einkaufsdatum eintragen, auf Gekauft setzen und Zahlungen ergänzen. Er verschwindet dann aus der Planung, ohne eine zweite Position anzulegen. Änderungen anschließend mit Projekt speichern sichern. Der zusätzliche Einkaufsbutton steht oben direkt neben Verkauf / Gutschrift; der bisherige Button bleibt ebenfalls verfügbar.
+
+## Rückzahlungen an Tobias und Projektstart
+
+Gespeicherte Projekte öffnen direkt den Reiter **Kosten & Zahlungen**. Neue Projekte beginnen weiterhin bei den Projektdaten. Speichern erhält den aktuell gewählten Reiter.
+
+Die zusätzliche Spalte **Rückzahlungen an Tobias** zeigt je Person deren geleistete Rückzahlungen; bei Tobias steht die insgesamt erhaltene Summe. Im gleichnamigen aufklappbaren Protokoll über **+ Rückzahlung an Tobias erfassen** Person, Betrag, Datum und optional eine Notiz eingeben. Die Beschreibung ist vorbelegt. Anschließend das Projekt speichern.
+
+Diese Rückzahlungen reduzieren ausschließlich Tobias' Nettoausgaben. Die Ausgaben der zahlenden Person bleiben ausdrücklich unverändert. Beispiel: Tobias 200 €, Lea 100 €; Lea zahlt 20 € an Tobias zurück. Danach Tobias 180 €, Lea weiterhin 100 €, separate Spalte Lea 20 €. Originale Einkäufe, kalkulierte Kosten und offene Einkaufszahlungen verändern sich nicht. Die Nettoausgaben des Projekts sinken und das verfügbare Budget steigt um die Rückzahlung. Größere Einnahmen können einen Überschuss ergeben.
+
+Das Protokoll erhält Originale und Korrekturen als zusätzliche Stornos. Gespeicherte Einträge lassen sich nicht überschreiben oder entfernen. Frühere Projekte starten mit leerem Protokoll. Speichern aktualisiert auf Dateiformat 6; anschließend mindestens Version 0.8 verwenden.

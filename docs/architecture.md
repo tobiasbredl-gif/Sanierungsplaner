@@ -14,7 +14,7 @@ Das Code-behind initialisiert den Datenkontext und delegiert den Schließschutz 
 
 `RenovationProject` ist ein unveränderlicher Datensatz mit GUID, Revisions-GUID, Name, Adresse, Notizen und UTC-Zeitstempeln. Die Oberfläche arbeitet mit einem getrennten Entwurf. Erst nach erfolgreichem Speichern wird dieser in die Projektliste übernommen. Ein fehlgeschlagener Schreibversuch erhält den Entwurf.
 
-`JsonProjectStore` schreibt pro Projekt eine Datei `<GUID>.json` unter `%LOCALAPPDATA%\Sanierungsplaner\Projects`. Neue Dokumente tragen `SchemaVersion: 5`; Versionen 1, 2, 3 und 4 bleiben lesbar. Fehlende Kosten/Budgets (v1), Einkaufsdaten, Rückzahlungen und Gutschriften werden mit leerem Bestand bzw. unbekanntem Datum repräsentiert. Erst beim nächsten Speichern erfolgt die Aktualisierung. Unbekannte Versionen und ungültige Daten führen zu einem sichtbaren Fehler. Datendateien liegen außerhalb des Repositories und des Veröffentlichungsordners.
+`JsonProjectStore` schreibt pro Projekt eine Datei `<GUID>.json` unter `%LOCALAPPDATA%\Sanierungsplaner\Projects`. Neue Dokumente tragen `SchemaVersion: 6`; Versionen 1, 2, 3, 4 und 5 bleiben lesbar. Fehlende Kosten/Budgets (v1), Einkaufsdaten, Rückzahlungen und Gutschriften werden mit leerem Bestand bzw. unbekanntem Datum repräsentiert. Erst beim nächsten Speichern erfolgt die Aktualisierung. Unbekannte Versionen und ungültige Daten führen zu einem sichtbaren Fehler. Datendateien liegen außerhalb des Repositories und des Veröffentlichungsordners.
 
 ## Kosten und Zahlungen
 
@@ -70,3 +70,6 @@ Tests prüfen die vier Betragsbuttons, Teilzahlungen, wiederholtes Klicken, Rund
 
 
 Optionale MwSt.: CostItem.AddVat speichert je Einkauf den 19-Prozent-Aufschlag. CalculateTotal rundet zunächst Menge × Einzelpreis auf Cent und addiert die separat auf Cent gerundete Steuer. Modell, Vorschau und Zahlungsübernahme verwenden dieselbe Berechnung. Fehlende Auswahl in Altbeständen bedeutet false; Dateiformat 5 schützt vor Berechnungen durch ältere Apps.
+
+
+IncomingRepayment protokolliert Zahlungen von Lea/Wolfgang/Jennifer an Tobias separat mit Payer, Betrag, Datum und Stornoreferenz. Der Dateispeicher schützt den gespeicherten Präfix. Nur Tobias erhält einen Abzug; die zahlende Person wird nicht belastet. Projekt-Nettoausgaben = Zahlungen minus Verkaufseinnahmen minus wirksame Rückzahlungen an Tobias. Die Summe aller vier persönlichen Nettoausgaben entspricht diesem Wert. Dateiformat 6 schützt die neue Bedeutung vor älteren Apps. SelectedProjectTab wählt beim Öffnen bestehender Projekte Kosten und beim Anlegen Stammdaten; Speichern erhält die Auswahl.

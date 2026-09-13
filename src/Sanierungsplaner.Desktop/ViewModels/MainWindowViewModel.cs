@@ -33,6 +33,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
     public ObservableCollection<RenovationProject> Projects { get; } = [];
     public CostPlanViewModel CostPlan { get; }
+    private int _selectedProjectTab;
+    public int SelectedProjectTab { get => _selectedProjectTab; set { _selectedProjectTab = value; OnPropertyChanged(); } }
     public string StoragePath => _store.FolderPath;
     public bool ShowAbout => _showAbout;
     public bool IsEditing => _isEditing;
@@ -41,7 +43,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public bool IsEmpty => Projects.Count == 0 && !_loadFailed;
     public string ProjectCount => Projects.Count == 1 ? "1 gespeichertes Projekt" : $"{Projects.Count} gespeicherte Projekte";
     public string PageTitle => ShowAbout ? "Deine Pläne. Lokal gespeichert." : IsEditing ? (_original is null ? "Ein neues Projekt." : "Dein Projekt im Detail.") : "Raum für deine Pläne.";
-    public string PageDescription => ShowAbout ? "Sanierungsplaner · Version 0.7.0"
+    public string PageDescription => ShowAbout ? "Sanierungsplaner · Version 0.8.0"
         : IsEditing ? "Erfasse die Grundlagen für deine Sanierung. Du kannst alle Angaben später ändern."
         : "Alle Sanierungsvorhaben an einem Ort. Lege ein Projekt an oder arbeite an einem bestehenden weiter.";
     public string Name { get => _name; set { _name = value; DraftChanged(); } }
@@ -96,6 +98,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
     private void Edit(RenovationProject? project)
     {
+        SelectedProjectTab = project is null ? 0 : 1;
         _original = project;
         _name = project?.Name ?? "";
         _address = project?.Address ?? "";
@@ -126,14 +129,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         }
         var project = new RenovationProject(_original?.Id ?? Guid.NewGuid(), Guid.NewGuid(),
             Name.Trim(), Address.Trim(), Notes.Trim(), _original?.CreatedAt ?? now, now)
-        { Budget = budget, Items = CostPlan.Items.ToArray(), Reimbursements = CostPlan.Reimbursements.ToArray(), Credits = CostPlan.Credits.ToArray() };
+        { Budget = budget, Items = CostPlan.Items.ToArray(), Reimbursements = CostPlan.Reimbursements.ToArray(), Credits = CostPlan.Credits.ToArray(), IncomingRepayments = CostPlan.IncomingRepayments.ToArray() };
         try
         {
             _store.Save(project, _original?.Revision);
             var previous = Projects.FirstOrDefault(p => p.Id == project.Id);
             if (previous is not null) Projects.Remove(previous);
             Projects.Insert(0, project);
+            var selectedTab = SelectedProjectTab;
             Edit(project);
+            SelectedProjectTab = selectedTab;
             Status = "Projekt erfolgreich gespeichert.";
             return true;
         }

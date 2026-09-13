@@ -28,6 +28,7 @@ internal static partial class Program
             TestMatching();
             TestRepayments(Path.Combine(testRoot, "repayments"));
             TestLegacyCosts(Path.Combine(testRoot, "legacy-costs"));
+            TestIncoming(Path.Combine(testRoot, "incoming"));
             TestFillAmount();
             TestCredits(Path.Combine(testRoot, "credits"));
             TestWindow(Path.Combine(testRoot, "window"), args.FirstOrDefault());
@@ -67,7 +68,7 @@ internal static partial class Program
         Expect<InvalidDataException>(() => store.Load());
         Expect<InvalidDataException>(() => store.Save(updated, updated.Revision));
         Check(File.ReadAllText(file) == "{kaputt", "Beschädigte Datei bleibt erhalten");
-        File.WriteAllText(file, valid.Replace("\"SchemaVersion\": 5", "\"SchemaVersion\": 99"));
+        File.WriteAllText(file, valid.Replace("\"SchemaVersion\": 6", "\"SchemaVersion\": 99"));
         Expect<InvalidDataException>(() => store.Load());
         File.WriteAllText(file, valid);
         var legacy = JsonNode.Parse(valid)!;
@@ -80,7 +81,7 @@ internal static partial class Program
         var migrated = store.Load().Single();
         Check(migrated.Budget == 0 && migrated.Items.Length == 0 && migrated.Name == updated.Name, "Bestehendes v0.2-Projekt wird verlustfrei geladen");
         store.Save(migrated with { Revision = Guid.NewGuid() }, migrated.Revision);
-        Check(JsonNode.Parse(File.ReadAllText(file))!["SchemaVersion"]!.GetValue<int>() == 5, "Migration schreibt neues Format erst beim Speichern");
+        Check(JsonNode.Parse(File.ReadAllText(file))!["SchemaVersion"]!.GetValue<int>() == 6, "Migration schreibt neues Format erst beim Speichern");
         Check(!Directory.EnumerateFiles(folder, "*.tmp").Any(), "Keine temporären Dateien nach erfolgreichem Speichern");
     }
 
@@ -155,13 +156,16 @@ internal static partial class Program
         if (screenshot is not null) Capture(window, screenshot);
         model.ShowAboutCommand.Execute(null);
         Pump(window);
-        Check(model.ShowAbout && model.PageDescription.Contains("0.7.0"), "App-Information");
+        Check(model.ShowAbout && model.PageDescription.Contains("0.8.0"), "App-Information");
         model.ShowHomeCommand.Execute(null);
         model.OpenProjectCommand.Execute(model.Projects.Single());
+        Pump(window);
+        Check(((TabControl)window.FindName("ProjectTabs")).SelectedIndex == 1, "Projekt öffnet direkt Kosten und Zahlungen");
         TestCostWindow(window, screenshot);
         TestRepaymentWindow(window, screenshot);
         TestMatchWindow(window, screenshot);
         TestCreditWindow(window, screenshot);
+        TestIncomingWindow(window, screenshot);
         window.Width = window.MinWidth;
         window.Height = window.MinHeight;
         Pump(window);

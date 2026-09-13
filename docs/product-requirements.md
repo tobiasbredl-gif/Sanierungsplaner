@@ -41,3 +41,8 @@ Die aktuelle Desktop-Version besitzt keine Netzwerkfreigabe. Beschreibungen frü
 
 - Verkaufte Sachen als positive Gutschrift mit Beschreibung, Geldempfänger, Betrag und Datum erfassen; Nettoausgaben und Restbudget automatisch gegenrechnen. Dauerhaftes Protokoll mit Storno statt Löschen.
 - Neben Lea, Wolfgang, Jennifer und Tobias jeweils ein Gesamtbetrag-Button im Einkaufsformular: Positionsbetrag abzüglich vorhandener anderer Teilzahlungen automatisch eintragen, ohne Doppelzählung.
+
+## Ergänzungen in Version 0.8
+
+- Bestehende Projekte direkt bei Kosten & Zahlungen öffnen.
+- Rückzahlungen an Tobias separat je zahlender Person und mit Datum protokollieren. Nur Tobias entlasten; die Ausgaben der anderen Personen ausdrücklich nicht erhöhen. Stornos erhalten die ursprünglichen Einträge.

@@ -37,7 +37,7 @@
                 </StackPanel>
                 <StackPanel DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
                     <TextBlock Text="WINDOWS DESKTOP" Foreground="#BDD0C8" FontSize="11" />
-                    <TextBlock Text="Kostenübersicht · 0.7.0" Foreground="White" Margin="0,6,0,0" />
+                    <TextBlock Text="Kostenübersicht · 0.8.0" Foreground="White" Margin="0,6,0,0" />
                 </StackPanel>
             </DockPanel>
         </Border>
@@ -89,7 +89,7 @@
                     </StackPanel>
                     <StackPanel Visibility="{Binding ShowEditor, Converter={StaticResource VisibleWhenTrue}}">
                         <Button Content="← Alle Projekte" Command="{Binding BackCommand}" HorizontalAlignment="Left" Style="{StaticResource SecondaryButton}" Margin="0,0,0,16" />
-                        <TabControl x:Name="ProjectTabs" Background="Transparent" BorderThickness="0" Padding="0,16,0,0">
+                        <TabControl x:Name="ProjectTabs" SelectedIndex="{Binding SelectedProjectTab, Mode=TwoWay}" Background="Transparent" BorderThickness="0" Padding="0,16,0,0">
                             <TabItem Header="Projektdaten" Padding="16,10">
                         <Border Style="{StaticResource Card}">
                             <StackPanel>

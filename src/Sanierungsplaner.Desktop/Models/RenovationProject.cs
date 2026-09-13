@@ -9,6 +9,7 @@ public sealed record RenovationProject(
     public decimal Budget { get; init; }
     public CostItem[] Items { get; init; } = [];
     public Reimbursement[] Reimbursements { get; init; } = [];
+    public IncomingRepayment[] IncomingRepayments { get; init; } = [];
     public SalesCredit[] Credits { get; init; } = [];
     [JsonIgnore]
     public string AddressLabel => string.IsNullOrWhiteSpace(Address) ? "Noch keine Objektadresse" : Address;
@@ -33,5 +34,7 @@ public sealed record RenovationProject(
         Reimbursement.ValidateLedger(Reimbursements, Items);
         if (Credits is null) throw new System.IO.InvalidDataException("Ungültiges Gutschriftprotokoll.");
         SalesCredit.ValidateLedger(Credits);
+        if (IncomingRepayments is null) throw new System.IO.InvalidDataException("Ungültiges Protokoll für Rückzahlungen an Tobias.");
+        IncomingRepayment.ValidateLedger(IncomingRepayments);
     }
 }
