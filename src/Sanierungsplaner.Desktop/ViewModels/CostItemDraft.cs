@@ -26,7 +26,7 @@ public sealed class CostItemDraft : INotifyPropertyChanged
             ["Material"] = item?.Material ?? "", ["Floor"] = item?.Floor ?? "", ["Room"] = item?.Room ?? "",
             ["Quantity"] = (item?.Quantity ?? 1).ToString("0.###", CultureInfo.GetCultureInfo("de-DE")),
             ["Unit"] = item?.Unit ?? "Stück", ["UnitPrice"] = CostPlanViewModel.Format(item?.UnitPrice ?? 0),
-            ["Status"] = item?.Status ?? "Geplant", ["Lea"] = CostPlanViewModel.Format(item?.Payments.Lea ?? 0),
+            ["Status"] = item?.Status ?? "Gekauft", ["Lea"] = CostPlanViewModel.Format(item?.Payments.Lea ?? 0),
             ["Wolfgang"] = CostPlanViewModel.Format(item?.Payments.Wolfgang ?? 0),
             ["Jennifer"] = CostPlanViewModel.Format(item?.Payments.Jennifer ?? 0),
             ["Tobias"] = CostPlanViewModel.Format(item?.Payments.Tobias ?? 0)

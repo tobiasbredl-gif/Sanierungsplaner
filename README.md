@@ -1,6 +1,6 @@
 # Sanierungsplaner
 
-Native Windows-Desktop-App mit C# und WPF auf .NET 10. Version 0.5.0 bietet lokale Projekte, automatisch zusammengefasste Einkäufe mit Datum protokollierte Rückzahlungen von Tobias an Lea, Wolfgang und Jennifer sowie Verkaufsgutschriften und automatische Zahlungsbeträge.
+Native Windows-Desktop-App mit C# und WPF auf .NET 10. Version 0.5.1 bietet lokale Projekte, automatisch zusammengefasste Einkäufe mit Datum protokollierte Rückzahlungen von Tobias an Lea, Wolfgang und Jennifer sowie Verkaufsgutschriften und automatische Zahlungsbeträge.
 
 ## Ein Projekt anlegen
 
@@ -15,7 +15,7 @@ Die Projekte werden beim nächsten App-Start wieder geladen. Beim Verlassen eine
 
 1. Ein Projekt öffnen und **Kosten & Zahlungen** auswählen.
 2. Über **Einkauf / Position erfassen** Material/Beschreibung, Datum, Menge, Einheit und Einzelpreis erfassen. Das Datum ist mit heute vorbelegt und für ältere Einkäufe änderbar. Raum und Etage sind optional. Es gibt keine Kategorien oder Unterteilung nach Gewerken.
-3. Den Status **Geplant**, **Gekauft** oder **Verbaut** wählen.
+3. Der Status ist bei neuen Positionen automatisch **Gekauft**. Bei Bedarf auf **Geplant** oder **Verbaut** ändern.
 4. Bereits gezahlte Beträge in den vier Personenzeilen eintragen; für alle anderen steht dort 0,00. Teilzahlungen und mehrere Zahlende pro Position sind möglich.
    Mit **Gesamtbetrag** neben einer Person wird der Positionsbetrag automatisch eingetragen. Bestehende Zahlungen der anderen Personen werden abgezogen und bleiben erhalten. Wiederholtes Klicken zählt nichts doppelt. Bei einer Zahlung wechselt Geplant automatisch zu Gekauft.
 5. **Position übernehmen**, anschließend **Projekt speichern** anklicken. Übernehmen allein sichert noch nicht auf der Festplatte.
