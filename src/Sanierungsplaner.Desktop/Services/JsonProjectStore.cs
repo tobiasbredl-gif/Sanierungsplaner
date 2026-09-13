@@ -29,12 +29,14 @@ public sealed class JsonProjectStore(string folderPath) : IProjectStore
             throw new IOException("Das Projekt wurde außerhalb dieses Fensters geändert. Kopiere deine Änderungen und lade die Projekte erneut.");
         if (existing is not null && !project.Reimbursements.Take(existing.Reimbursements.Length).SequenceEqual(existing.Reimbursements))
             throw new InvalidDataException("Gespeicherte Rückzahlungen dürfen nicht entfernt oder verändert werden. Bitte einen Stornoeintrag verwenden.");
+        if (existing is not null && !project.Credits.Take(existing.Credits.Length).SequenceEqual(existing.Credits))
+            throw new InvalidDataException("Gespeicherte Gutschriften dürfen nicht entfernt oder verändert werden. Bitte einen Stornoeintrag verwenden.");
         var temporary = Path.Combine(FolderPath, $"{project.Id:D}.{Guid.NewGuid():N}.tmp");
         try
         {
             using (var stream = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             {
-                JsonSerializer.Serialize(stream, new ProjectDocument(3, project), Options);
+                JsonSerializer.Serialize(stream, new ProjectDocument(4, project), Options);
                 stream.Flush(flushToDisk: true);
             }
             // The original remains untouched until the complete new document has been flushed.
@@ -55,7 +57,7 @@ public sealed class JsonProjectStore(string folderPath) : IProjectStore
         try
         {
             var document = JsonSerializer.Deserialize<ProjectDocument>(File.ReadAllText(path));
-            if (document is not { SchemaVersion: 1 or 2 or 3, Project: not null })
+            if (document is not { SchemaVersion: 1 or 2 or 3 or 4, Project: not null })
                 throw new InvalidDataException("Unbekanntes Projektformat.");
             document.Project.Validate();
             if (Path.GetFileNameWithoutExtension(path) != document.Project.Id.ToString("D"))

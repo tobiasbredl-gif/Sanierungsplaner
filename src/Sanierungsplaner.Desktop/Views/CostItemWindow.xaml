@@ -40,14 +40,18 @@
                 <TextBlock Text="Status" />
                 <ComboBox x:Name="StatusInput" ItemsSource="{Binding Statuses}" SelectedItem="{Binding [Status], UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Status" />
                 <TextBlock Text="Wer hat was bezahlt?" FontSize="20" FontWeight="SemiBold" Margin="0,12,0,8" />
-                <TextBlock Text="Nur tatsächlich bezahlte Beträge eintragen. Teilzahlungen und gemeinsame Zahlungen sind möglich; 0,00 bedeutet noch nichts bezahlt." Foreground="#596B62" Margin="0,0,0,16" />
+                <TextBlock Text="Gesamtbetrag trägt die Kosten abzüglich anderer Teilzahlungen ein. Andere Beträge bleiben erhalten. Bei einer Zahlung wird Geplant auf Gekauft gesetzt." Foreground="#596B62" Margin="0,0,0,16" />
                 <Grid>
-                    <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition Width="180" /></Grid.ColumnDefinitions>
+                    <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition Width="130" /><ColumnDefinition Width="126" /></Grid.ColumnDefinitions>
                     <Grid.RowDefinitions><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /></Grid.RowDefinitions>
                     <TextBlock Text="Lea" VerticalAlignment="Center" /><TextBox x:Name="LeaInput" Style="{StaticResource NumericInput}" Grid.Column="1" Text="{Binding [Lea], UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Bezahlt von Lea" />
                     <TextBlock Grid.Row="1" Text="Wolfgang" VerticalAlignment="Center" /><TextBox x:Name="WolfgangInput" Style="{StaticResource NumericInput}" Grid.Row="1" Grid.Column="1" Text="{Binding [Wolfgang], UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Bezahlt von Wolfgang" />
                     <TextBlock Grid.Row="2" Text="Jennifer" VerticalAlignment="Center" /><TextBox x:Name="JenniferInput" Style="{StaticResource NumericInput}" Grid.Row="2" Grid.Column="1" Text="{Binding [Jennifer], UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Bezahlt von Jennifer" />
                     <TextBlock Grid.Row="3" Text="Tobias" VerticalAlignment="Center" /><TextBox x:Name="TobiasInput" Style="{StaticResource NumericInput}" Grid.Row="3" Grid.Column="1" Text="{Binding [Tobias], UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Bezahlt von Tobias" />
+                    <Button x:Name="LeaTotalButton" Grid.Column="2" Content="Gesamtbetrag" Command="{Binding FillAmountCommand}" CommandParameter="Lea" Margin="10,3,0,8" Padding="8,4" MinHeight="30" FontSize="12" ToolTip="Gesamtbetrag abzüglich der Zahlungen anderer Personen" />
+                    <Button x:Name="WolfgangTotalButton" Grid.Row="1" Grid.Column="2" Content="Gesamtbetrag" Command="{Binding FillAmountCommand}" CommandParameter="Wolfgang" Margin="10,3,0,8" Padding="8,4" MinHeight="30" FontSize="12" ToolTip="Gesamtbetrag abzüglich der Zahlungen anderer Personen" />
+                    <Button x:Name="JenniferTotalButton" Grid.Row="2" Grid.Column="2" Content="Gesamtbetrag" Command="{Binding FillAmountCommand}" CommandParameter="Jennifer" Margin="10,3,0,8" Padding="8,4" MinHeight="30" FontSize="12" ToolTip="Gesamtbetrag abzüglich der Zahlungen anderer Personen" />
+                    <Button x:Name="TobiasTotalButton" Grid.Row="3" Grid.Column="2" Content="Gesamtbetrag" Command="{Binding FillAmountCommand}" CommandParameter="Tobias" Margin="10,3,0,8" Padding="8,4" MinHeight="30" FontSize="12" ToolTip="Gesamtbetrag abzüglich der Zahlungen anderer Personen" />
                 </Grid>
             </StackPanel>
         </ScrollViewer>

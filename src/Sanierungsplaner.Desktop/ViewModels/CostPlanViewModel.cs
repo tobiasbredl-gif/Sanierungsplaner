@@ -12,15 +12,18 @@ public sealed class CostPlanViewModel : INotifyPropertyChanged
 {
     private readonly ICostItemEditor _editor;
     private readonly IReimbursementEditor _repayments;
+    private readonly ISalesCreditEditor _sales;
     private readonly Action _changed;
     private string _budget = "0,00";
     private decimal _originalBudget;
     private CostItem[] _originalItems = [];
     private Reimbursement[] _originalReimbursements = [];
-    public CostPlanViewModel(ICostItemEditor editor, Action changed, IReimbursementEditor? repayments = null)
+    private SalesCredit[] _originalCredits = [];
+    public CostPlanViewModel(ICostItemEditor editor, Action changed, IReimbursementEditor? repayments = null, ISalesCreditEditor? sales = null)
     {
         _editor = editor;
         _repayments = repayments ?? new ReimbursementEditor();
+        _sales = sales ?? new SalesCreditEditor();
         _changed = changed;
         AddCommand = new RelayCommand(() => Edit(null));
         EditCommand = new RelayCommand(p => Edit((CostItem)p!), p => p is CostItem);
@@ -34,21 +37,31 @@ public sealed class CostPlanViewModel : INotifyPropertyChanged
             p => p is PersonTotal person && person.Person != "Tobias" && People.First(r => r.Person == person.Person).Amount > 0);
         ReverseCommand = new RelayCommand(p => Reverse((Reimbursement)p!),
             p => p is Reimbursement entry && entry.ReversesId is null && !Reimbursements.Any(r => r.ReversesId == entry.Id));
+        AddCreditCommand = new RelayCommand(RecordCredit);
+        ReverseCreditCommand = new RelayCommand(p => ReverseCredit((SalesCredit)p!),
+            p => p is SalesCredit entry && entry.ReversesId is null && !Credits.Any(r => r.ReversesId == entry.Id));
     }
     public ObservableCollection<CostItem> Items { get; } = [];
     public ObservableCollection<Reimbursement> Reimbursements { get; } = [];
+    public ObservableCollection<SalesCredit> Credits { get; } = [];
     public string Error { get; private set; } = "";
     public string Notice { get; private set; } = "";
     public string BudgetText { get => _budget; set { _budget = value; Refresh(); } }
-    public bool IsDirty => BudgetText != Format(_originalBudget) || !Items.SequenceEqual(_originalItems) || !Reimbursements.SequenceEqual(_originalReimbursements);
+    public bool IsDirty => BudgetText != Format(_originalBudget) || !Items.SequenceEqual(_originalItems) || !Reimbursements.SequenceEqual(_originalReimbursements) || !Credits.SequenceEqual(_originalCredits);
     public decimal Total => Items.Sum(i => i.Total);
     public decimal Paid => Items.Sum(i => i.Payments.Total);
     public decimal Returned => Reimbursements.Sum(r => r.EffectiveAmount);
+    public decimal Income => Credits.Sum(c => c.EffectiveAmount);
+    public decimal NetPaid => Paid - Income;
+    public string IncomeLabel => $"+{CostItem.Money(Income)}";
+    public string NetPaidLabel => CostItem.Money(NetPaid);
+    public string CreditsHint => Credits.Count == 0 ? "Noch keine Gutschriften erfasst." : "Verkäufe zählen als positive Einnahmen. Originale und Stornos bleiben im Protokoll.";
+    public IReadOnlyList<SalesCredit> CreditHistory => Credits.Reverse().ToArray();
     public string TotalLabel => CostItem.Money(Total);
     public string PaidLabel => CostItem.Money(Paid);
     public string OutstandingLabel => CostItem.Money(Total - Paid);
-    public string RemainingLabel => TryBudget(out var budget) ? CostItem.Money(budget - Paid) : "Budget prüfen";
-    public string ForecastLabel => TryBudget(out var budget) ? CostItem.Money(budget - Total) : "Budget prüfen";
+    public string RemainingLabel => TryBudget(out var budget) ? CostItem.Money(budget - NetPaid) : "Budget prüfen";
+    public string ForecastLabel => TryBudget(out var budget) ? CostItem.Money(budget - Total + Income) : "Budget prüfen";
     public string BudgetError => TryBudget(out _) ? "" : "Budget bitte als Eurobetrag von 0 bis 1.000.000.000 mit maximal zwei Nachkommastellen eingeben.";
     public bool IsEmpty => Items.Count == 0;
     public string LedgerHint => Reimbursements.Count == 0 ? "Noch keine Rückzahlungen erfasst." : "Rückzahlungen und Stornos bleiben im Protokoll. Zum dauerhaften Sichern das Projekt speichern.";
@@ -58,13 +71,16 @@ public sealed class CostPlanViewModel : INotifyPropertyChanged
     {
         var gross = Items.Sum(i => Reimbursement.ForPerson(i.Payments, person));
         var received = person == "Tobias" ? -Returned : Reimbursements.Where(r => r.Recipient == person).Sum(r => r.EffectiveAmount);
-        return new PersonTotal(person, gross, received);
+        var income = Credits.Where(c => c.Recipient == person).Sum(c => c.EffectiveAmount);
+        return new PersonTotal(person, gross, received, income);
     }).ToArray();
     public RelayCommand AddCommand { get; }
     public RelayCommand EditCommand { get; }
     public RelayCommand RemoveCommand { get; }
     public RelayCommand ReimburseCommand { get; }
     public RelayCommand ReverseCommand { get; }
+    public RelayCommand AddCreditCommand { get; }
+    public RelayCommand ReverseCreditCommand { get; }
     public event PropertyChangedEventHandler? PropertyChanged;
     public bool TryBudget(out decimal value) => decimal.TryParse(BudgetText, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite,
         CultureInfo.GetCultureInfo("de-DE"), out value) && value >= 0 && value <= 1000000000m && decimal.Round(value, 2) == value;
@@ -75,10 +91,13 @@ public sealed class CostPlanViewModel : INotifyPropertyChanged
         _budget = Format(_originalBudget);
         _originalItems = project?.Items.ToArray() ?? [];
         _originalReimbursements = project?.Reimbursements.ToArray() ?? [];
+        _originalCredits = project?.Credits.ToArray() ?? [];
         Items.Clear();
         foreach (var item in _originalItems) Items.Add(item);
         Reimbursements.Clear();
         foreach (var entry in _originalReimbursements) Reimbursements.Add(entry);
+        Credits.Clear();
+        foreach (var credit in _originalCredits) Credits.Add(credit);
         Error = "";
         Notice = "";
         Notify();
@@ -119,6 +138,12 @@ public sealed class CostPlanViewModel : INotifyPropertyChanged
         var outstanding = People.First(p => p.Person == recipient).Amount;
         var entry = _repayments.Record(recipient, outstanding);
         if (entry is null) return;
+        if (entry.Amount > outstanding)
+        {
+            Error = "Die Rückzahlung übersteigt den nach Gutschriften noch offenen Betrag.";
+            Notify();
+            return;
+        }
         if (entry.Recipient != recipient || entry.ReversesId is not null || !CheckLedger(Items, Reimbursements.Append(entry))) return;
         Reimbursements.Add(entry);
         Refresh();
@@ -133,6 +158,30 @@ public sealed class CostPlanViewModel : INotifyPropertyChanged
         if (!CheckLedger(Items, Reimbursements.Append(reversal))) return;
         Reimbursements.Add(reversal);
         Refresh();
+    }
+    private void RecordCredit()
+    {
+        var credit = _sales.Record();
+        if (credit is null) return;
+        if (credit.ReversesId is not null || !CheckCredits(Credits.Append(credit))) return;
+        Credits.Add(credit);
+        Refresh();
+        Notice = $"Gutschrift über +{CostItem.Money(credit.Amount)} erfasst. Bitte das Projekt speichern.";
+        Notify();
+    }
+    private void ReverseCredit(SalesCredit entry)
+    {
+        if (!_sales.ConfirmReversal(entry)) return;
+        var reversal = new SalesCredit(Guid.NewGuid(), entry.Description, entry.Recipient, entry.Amount,
+            DateOnly.FromDateTime(DateTime.Today), DateTimeOffset.UtcNow, $"Storno der Gutschrift vom {entry.Date:dd.MM.yyyy}.", entry.Id);
+        if (!CheckCredits(Credits.Append(reversal))) return;
+        Credits.Add(reversal);
+        Refresh();
+    }
+    private bool CheckCredits(IEnumerable<SalesCredit> credits)
+    {
+        try { SalesCredit.ValidateLedger(credits.ToArray()); return true; }
+        catch (InvalidDataException error) { Error = error.Message; Notice = ""; Notify(); return false; }
     }
     private bool CheckLedger(IEnumerable<CostItem> items, IEnumerable<Reimbursement> ledger)
     {
@@ -151,16 +200,17 @@ public sealed class CostPlanViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(string.Empty));
         ReimburseCommand.Refresh();
         ReverseCommand.Refresh();
+        ReverseCreditCommand.Refresh();
     }
     public static string Format(decimal amount) => amount.ToString("0.00", CultureInfo.GetCultureInfo("de-DE"));
-    public sealed record PersonTotal(string Person, decimal Gross, decimal Received)
+    public sealed record PersonTotal(string Person, decimal Gross, decimal Received, decimal Income = 0)
     {
-        public decimal Amount => Gross - Received;
+        public decimal Amount => Gross - Received - Income;
         public string AmountLabel => CostItem.Money(Amount);
         public string DetailLabel => Person == "Tobias"
-            ? $"Eigene Einkäufe: {CostItem.Money(Gross)} · übernommen: {CostItem.Money(-Received)}"
-            : $"Einkäufe: {CostItem.Money(Gross)} · zurückerhalten: {CostItem.Money(Received)}";
-        public string AmountCaption => Person == "Tobias" ? "Deine Ausgaben" : "Noch offen";
+            ? $"Eigene Einkäufe: {CostItem.Money(Gross)} · übernommen: {CostItem.Money(-Received)} · Einnahmen: +{CostItem.Money(Income)}"
+            : $"Einkäufe: {CostItem.Money(Gross)} · zurückerhalten: {CostItem.Money(Received)} · Einnahmen: +{CostItem.Money(Income)}";
+        public string AmountCaption => Amount < 0 ? "Überschuss" : Person == "Tobias" ? "Deine Nettoausgaben" : "Noch offen";
     }
     public sealed class PurchaseGroup(CostItem[] entries)
     {

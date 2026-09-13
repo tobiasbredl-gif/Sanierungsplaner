@@ -14,7 +14,7 @@ Das Code-behind initialisiert den Datenkontext und delegiert den Schließschutz 
 
 `RenovationProject` ist ein unveränderlicher Datensatz mit GUID, Revisions-GUID, Name, Adresse, Notizen und UTC-Zeitstempeln. Die Oberfläche arbeitet mit einem getrennten Entwurf. Erst nach erfolgreichem Speichern wird dieser in die Projektliste übernommen. Ein fehlgeschlagener Schreibversuch erhält den Entwurf.
 
-`JsonProjectStore` schreibt pro Projekt eine Datei `<GUID>.json` unter `%LOCALAPPDATA%\Sanierungsplaner\Projects`. Neue Dokumente tragen `SchemaVersion: 3`; Versionen 1 und 2 bleiben lesbar. Fehlende Kosten/Budgets (v1), Einkaufsdaten und Rückzahlungen werden mit leerem Bestand bzw. unbekanntem Datum repräsentiert. Erst beim nächsten Speichern erfolgt die Aktualisierung. Unbekannte Versionen und ungültige Daten führen zu einem sichtbaren Fehler. Datendateien liegen außerhalb des Repositories und des Veröffentlichungsordners.
+`JsonProjectStore` schreibt pro Projekt eine Datei `<GUID>.json` unter `%LOCALAPPDATA%\Sanierungsplaner\Projects`. Neue Dokumente tragen `SchemaVersion: 4`; Versionen 1, 2 und 3 bleiben lesbar. Fehlende Kosten/Budgets (v1), Einkaufsdaten, Rückzahlungen und Gutschriften werden mit leerem Bestand bzw. unbekanntem Datum repräsentiert. Erst beim nächsten Speichern erfolgt die Aktualisierung. Unbekannte Versionen und ungültige Daten führen zu einem sichtbaren Fehler. Datendateien liegen außerhalb des Repositories und des Veröffentlichungsordners.
 
 ## Kosten und Zahlungen
 
@@ -34,7 +34,7 @@ Jeder Einkauf bleibt ein eigener `CostItem` mit stabiler ID, optionalem `DateOnl
 
 `Reimbursement` protokolliert Empfänger, positiven Betrag, Rückzahlungsdatum, Erfassungszeit und Notiz. Eine Rückzahlung ist ausschließlich von Tobias an Lea, Wolfgang oder Jennifer möglich. Ein Storno verweist über `ReversesId` auf genau einen vorherigen, noch nicht stornierten Originaleintrag und wirkt mit umgekehrtem Vorzeichen. Originale werden nicht entfernt. Der Dateispeicher prüft unter der bestehenden Sperre, dass bereits gespeicherte Protokolleinträge als unveränderter Präfix erhalten bleiben.
 
-Für Lea/Wolfgang/Jennifer gilt: ursprüngliche Zahlungen minus wirksame Rückzahlungen. Für Tobias gilt: eigene ursprüngliche Zahlungen plus alle wirksamen Rückzahlungen. Die Summe aller vier Ausgaben bleibt gleich den tatsächlich bezahlten Projektkosten. Die Validierung verhindert Überzahlungen, doppelte Stornos und spätere Änderungen an Einkäufen, die zu einer negativen offenen Forderung führen würden. Das lokale JSON-Protokoll ist nicht gegen manuelle Dateimanipulation außerhalb der App geschützt.
+Für Lea/Wolfgang/Jennifer gilt: ursprüngliche Zahlungen minus wirksame Rückzahlungen. Für Tobias gilt: eigene ursprüngliche Zahlungen plus alle wirksamen Rückzahlungen. Verkaufseinnahmen werden zusätzlich beim jeweiligen Empfänger abgezogen. Die Summe aller vier Ausgaben entspricht den Nettoausgaben des Projekts. Die Validierung verhindert Überzahlungen, doppelte Stornos und spätere Änderungen an Einkäufen, bei denen Rückzahlungen die ursprünglichen Zahlungen übersteigen würden. Neue Rückzahlungen sind zusätzlich auf den nach Einnahmen noch offenen Betrag begrenzt. Das lokale JSON-Protokoll ist nicht gegen manuelle Dateimanipulation außerhalb der App geschützt.
 
 `SelectAllOnFocus` markiert numerische Textfelder bei Tastaturfokus und beim ersten Mausklick. Der erste Klick wird nach Fokusübergabe behandelt, damit die TextBox nicht anschließend die Auswahl aufhebt. Erneute Klicks in ein fokussiertes Feld erlauben Cursorpositionierung; ohne Tastatureingabe wird kein Wert verändert.
 
@@ -56,4 +56,14 @@ Optional akzeptiert der Test einen PNG-Zielpfad als einziges Argument. Neben der
 
 ## Weitere Ausbauschritte
 
-Die aus dem früheren Gespräch übernommenen Vorgaben stehen in [product-requirements.md](product-requirements.md). Dazu gehören Excel-Export, Android-Offline-Eingaben und ausschließlich authentifizierte, verschlüsselte WLAN-Synchronisierung mit expliziter Gerätefreigabe. Diese Netzwerkanbindung ist in Version 0.4.0 noch nicht vorhanden.
+Die aus dem früheren Gespräch übernommenen Vorgaben stehen in [product-requirements.md](product-requirements.md). Dazu gehören Excel-Export, Android-Offline-Eingaben und ausschließlich authentifizierte, verschlüsselte WLAN-Synchronisierung mit expliziter Gerätefreigabe. Diese Netzwerkanbindung ist in Version 0.5.0 noch nicht vorhanden.
+
+## Verkaufsgutschriften und automatische Beträge
+
+`SalesCredit` speichert positive Einnahmen mit Beschreibung, Empfänger, Datum, Erfassungszeit und Notiz. Stornos referenzieren genau ein früheres Original und wirken negativ. `JsonProjectStore` schützt gespeicherte Einträge als unveränderten Präfix. Neue Einträge werden zusammen mit dem Projekt gespeichert; Abbrechen oder Verwerfen erhält die bisherigen Daten.
+
+Nettoausgaben = ursprüngliche Zahlungen − wirksame Einnahmen. Restbudget = Budget − Nettoausgaben. Planungsspielraum = Budget − kalkulierte Kosten + Einnahmen. Offene Anschaffungsbeträge bleiben kalkulierte Kosten − ursprüngliche Zahlungen. Einnahmen können persönliche Salden unter null senken; dies wird als Überschuss angezeigt.
+
+`FillAmountCommand` trägt den gerundeten Positionsbetrag abzüglich der drei anderen Zahlungen beim ausgewählten Zahler ein. Fremde Zahlungen bleiben erhalten, erneutes Klicken ist idempotent. Ungültige oder überhöhte Eingaben werden abgewiesen. Positive Zahlungen setzen einen geplanten Einkauf auf gekauft.
+
+Tests prüfen die vier Betragsbuttons, Teilzahlungen, wiederholtes Klicken, Rundung, Verkäufe für alle Personen, Rückzahlungen nach Einnahmen, Überschüsse, Stornos, unveränderliche gespeicherte Journale und das erneute Laden. Der Gutschriftdialog wird als echtes WPF-Fenster bedient.

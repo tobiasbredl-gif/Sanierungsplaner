@@ -1,0 +1,28 @@
+<Window x:Class="Sanierungsplaner.Desktop.Views.SalesCreditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:behaviors="clr-namespace:Sanierungsplaner.Desktop.Behaviors"
+        Title="Verkauf / Gutschrift" Width="590" Height="730" MinWidth="500" MinHeight="530" WindowStartupLocation="CenterOwner"
+        Style="{StaticResource {x:Type Window}}" Language="de-DE">
+    <Grid Background="#F4F6F3"><DockPanel Margin="24">
+        <WrapPanel DockPanel.Dock="Bottom" Margin="0,16,0,0">
+            <Button x:Name="ApplyButton" Content="Gutschrift übernehmen" Click="Apply" Margin="0,0,12,8" />
+            <Button Content="Abbrechen" IsCancel="True" Margin="0,0,0,8" />
+        </WrapPanel>
+        <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="0,0,12,0">
+            <TextBlock Text="Ein Verkauf. Ein Plus fürs Projekt." FontSize="24" FontWeight="SemiBold" />
+            <TextBlock Text="Bereits erhaltenes Geld als Einnahme erfassen. Die ursprünglichen Einkäufe bleiben erhalten." Foreground="#596B62" Margin="0,12,0,20" />
+            <TextBlock Text="Verkaufte Sache / Beschreibung *" />
+            <TextBox x:Name="DescriptionInput" Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" MaxLength="200" Padding="10,8" Margin="0,6,0,16" AutomationProperties.Name="Beschreibung des Verkaufs" />
+            <TextBlock Text="Erhaltener Betrag (€) *" />
+            <TextBox x:Name="AmountInput" Text="{Binding AmountText, UpdateSourceTrigger=PropertyChanged}" behaviors:SelectAllOnFocus.Enabled="True" Padding="10,8" Margin="0,6,0,16" AutomationProperties.Name="Gutschriftbetrag" />
+            <TextBlock Text="Wer hat das Geld erhalten?" />
+            <ComboBox x:Name="RecipientInput" ItemsSource="{Binding Recipients}" SelectedItem="{Binding Recipient}" Padding="10,8" Margin="0,6,0,16" AutomationProperties.Name="Geldempfänger" />
+            <TextBlock Text="Datum der Einnahme" />
+            <DatePicker x:Name="DateInput" SelectedDate="{Binding Date}" SelectedDateFormat="Short" Margin="0,6,0,16" AutomationProperties.Name="Einnahmedatum" />
+            <TextBlock Text="Notiz (optional)" />
+            <TextBox Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}" MaxLength="500" AcceptsReturn="True" TextWrapping="Wrap" Height="65" VerticalScrollBarVisibility="Auto" Margin="0,6,0,16" AutomationProperties.Name="Notiz zur Gutschrift" />
+            <TextBlock Text="{Binding Error}" Foreground="#852D14" AutomationProperties.LiveSetting="Assertive" />
+            <TextBlock Text="Anschließend das Projekt speichern. Irrtümliche Gutschriften lassen sich mit einem protokollierten Storno korrigieren." FontSize="12" Margin="0,16,0,0" />
+        </StackPanel></ScrollViewer>
+    </DockPanel></Grid>
+</Window>

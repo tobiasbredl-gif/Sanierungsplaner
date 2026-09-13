@@ -9,6 +9,7 @@ public sealed record RenovationProject(
     public decimal Budget { get; init; }
     public CostItem[] Items { get; init; } = [];
     public Reimbursement[] Reimbursements { get; init; } = [];
+    public SalesCredit[] Credits { get; init; } = [];
     [JsonIgnore]
     public string AddressLabel => string.IsNullOrWhiteSpace(Address) ? "Noch keine Objektadresse" : Address;
     [JsonIgnore]
@@ -30,5 +31,7 @@ public sealed record RenovationProject(
             throw new System.IO.InvalidDataException("Doppelte Kostenpositionen sind nicht zulässig.");
         if (Reimbursements is null) throw new System.IO.InvalidDataException("Ungültiges Rückzahlungsprotokoll.");
         Reimbursement.ValidateLedger(Reimbursements, Items);
+        if (Credits is null) throw new System.IO.InvalidDataException("Ungültiges Gutschriftprotokoll.");
+        SalesCredit.ValidateLedger(Credits);
     }
 }

@@ -36,3 +36,8 @@ Diese Anforderungen wurden aus dem früheren Planungsgespräch übernommen und d
 - Konfliktbehandlung und Tests für unautorisierte Geräte gehören zur Umsetzung vor Freigabe der Synchronisierung.
 
 Die aktuelle Desktop-Version besitzt keine Netzwerkfreigabe. Beschreibungen früherer Prototypen sind kein Nachweis, dass diese Funktionen in dieser neu aufgebauten Codebasis bereits existieren.
+
+## Ergänzungen in Version 0.5
+
+- Verkaufte Sachen als positive Gutschrift mit Beschreibung, Geldempfänger, Betrag und Datum erfassen; Nettoausgaben und Restbudget automatisch gegenrechnen. Dauerhaftes Protokoll mit Storno statt Löschen.
+- Neben Lea, Wolfgang, Jennifer und Tobias jeweils ein Gesamtbetrag-Button im Einkaufsformular: Positionsbetrag abzüglich vorhandener anderer Teilzahlungen automatisch eintragen, ohne Doppelzählung.

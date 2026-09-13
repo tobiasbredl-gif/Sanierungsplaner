@@ -1,6 +1,6 @@
 # Sanierungsplaner
 
-Native Windows-Desktop-App mit C# und WPF auf .NET 10. Version 0.4.0 bietet lokale Projekte, automatisch zusammengefasste Einkäufe mit Datum und protokollierte Rückzahlungen von Tobias an Lea, Wolfgang und Jennifer.
+Native Windows-Desktop-App mit C# und WPF auf .NET 10. Version 0.5.0 bietet lokale Projekte, automatisch zusammengefasste Einkäufe mit Datum protokollierte Rückzahlungen von Tobias an Lea, Wolfgang und Jennifer sowie Verkaufsgutschriften und automatische Zahlungsbeträge.
 
 ## Ein Projekt anlegen
 
@@ -17,6 +17,7 @@ Die Projekte werden beim nächsten App-Start wieder geladen. Beim Verlassen eine
 2. Über **Einkauf / Position erfassen** Material/Beschreibung, Datum, Menge, Einheit und Einzelpreis erfassen. Das Datum ist mit heute vorbelegt und für ältere Einkäufe änderbar. Raum und Etage sind optional. Es gibt keine Kategorien oder Unterteilung nach Gewerken.
 3. Den Status **Geplant**, **Gekauft** oder **Verbaut** wählen.
 4. Bereits gezahlte Beträge in den vier Personenzeilen eintragen; für alle anderen steht dort 0,00. Teilzahlungen und mehrere Zahlende pro Position sind möglich.
+   Mit **Gesamtbetrag** neben einer Person wird der Positionsbetrag automatisch eingetragen. Bestehende Zahlungen der anderen Personen werden abgezogen und bleiben erhalten. Wiederholtes Klicken zählt nichts doppelt. Bei einer Zahlung wechselt Geplant automatisch zu Gekauft.
 5. **Position übernehmen**, anschließend **Projekt speichern** anklicken. Übernehmen allein sichert noch nicht auf der Festplatte.
 
 Die vier Summenzeilen bleiben auch bei 0,00 € sichtbar. Unter **Einzelne Einträge mit Datum** lassen sich die einzelnen Einkäufe ansehen, bearbeiten oder nach Rückfrage entfernen. Geplante Positionen dürfen noch keine Zahlungen enthalten. Gekauft/Verbaut bedeutet nicht automatisch bezahlt: Dafür zählen ausschließlich die eingetragenen Zahlungen. Eine Zahlung über den Positionskosten wird abgewiesen.
@@ -43,6 +44,14 @@ Im **Rückzahlungsprotokoll** stehen Empfänger, Betrag, Rückzahlungsdatum, Erf
 
 Mehr als der offene Betrag kann nicht zurückgezahlt werden. Ebenso dürfen ursprüngliche Einkäufe nachträglich nicht so weit reduziert oder entfernt werden, dass die bereits erfolgten Rückzahlungen höher wären als die ursprünglichen Zahlungen. In diesem Fall zuerst den fehlerhaften Rückzahlungseintrag stornieren.
 
+## Verkäufe und Gutschriften
+
+Über **+ Verkauf / Gutschrift** bereits erhaltene Verkaufserlöse mit Beschreibung, Betrag, Geldempfänger und Datum erfassen. Das Datum ist mit heute vorbelegt. Nach **Gutschrift übernehmen** das **Projekt speichern**.
+
+Die Einnahme erscheint als **+ Betrag** im Protokoll und reduziert die Nettoausgaben der Person, die das Geld erhalten hat. Beispiel: 500 € bezahlt und 80 € verkauft ergeben 420 € Nettoausgaben. Das verfügbare Budget steigt um 80 €. Ursprüngliche Einkäufe und offene Lieferantenbeträge bleiben erhalten.
+
+Beschreibung, Empfänger, Datum und Erfassungszeit bleiben protokolliert. Eine Korrektur erfolgt über **Stornieren** als zusätzlicher Eintrag. Übersteigen Einnahmen die persönlichen Ausgaben, zeigt die Personenzeile einen Überschuss; ein negativer Saldo kann nicht zurückgezahlt werden.
+
 ## Budget
 
 Unter **Budget und Gesamtkosten** lässt sich das Projektbudget eintragen. Alle Werte sind Eurobeträge; Zahlen mit Dezimalkomma und ohne Tausendertrennzeichen eingeben. Beträge haben maximal zwei, Mengen maximal drei Nachkommastellen. Mengen und Einzelpreise sind auf 1.000.000 begrenzt, das Budget auf 1.000.000.000 €. Eine Kostenposition wird als Menge × Einzelpreis kaufmännisch auf Cent gerundet.
@@ -50,10 +59,12 @@ Unter **Budget und Gesamtkosten** lässt sich das Projektbudget eintragen. Alle 
 - **Kalkulierte Kosten:** Summe aller Positionen, unabhängig vom Status.
 - **Tatsächlich bezahlt:** Summe der vier Personenzahlungen.
 - **Noch zu bezahlen:** Kalkulierte Kosten minus Zahlungen; enthält auch geplante Anschaffungen.
-- **Restbudget:** Budget minus Zahlungen.
-- **Budget minus kalkulierte Kosten:** Verbleibender Spielraum in der Planung; negative Werte zeigen eine Überschreitung.
+- **Einnahmen:** Wirksame Verkaufsgutschriften als positiver Betrag.
+- **Nettoausgaben:** Zahlungen minus Einnahmen.
+- **Restbudget:** Budget minus Nettoausgaben.
+- **Budget minus kalkulierte Kosten plus Einnahmen:** Verbleibender Spielraum in der Planung; negative Werte zeigen eine Überschreitung.
 
-Es gibt keine automatische gleichmäßige Aufteilung der Kosten. Die Übersicht zeigt die ursprünglichen Einkäufe, zurückerhaltene Beträge bzw. von Tobias übernommene Ausgaben und den jeweils verbleibenden Anteil.
+Es gibt keine automatische gleichmäßige Aufteilung der Kosten. Die Übersicht zeigt die ursprünglichen Einkäufe, zurückerhaltene Beträge bzw. von Tobias übernommene Ausgaben Verkaufseinnahmen und den jeweils verbleibenden Anteil.
 
 ## Voraussetzungen
 
@@ -107,7 +118,7 @@ docs/                      Architektur und Umfang
 
 Enthalten sind Projektname (Pflichtfeld, maximal 120 Zeichen), Objektadresse (300 Zeichen), Notizen (10.000 Zeichen), Zeitstempel und Kostenpositionen samt Zahlungen und Budget. Excel-Export, Auswertungen nach Raum/Etage, Android-App und abgesicherte WLAN-Synchronisierung folgen in weiteren Schritten. Die abgestimmten Anforderungen stehen in [docs/product-requirements.md](docs/product-requirements.md).
 
-Bestehende Projekte aus v0.2 und v0.3 werden weiterhin geladen. Fehlende Einkaufsdaten erscheinen als **Datum unbekannt (Altbestand)**; die App erfindet kein Datum. Bereits vorhandene gleiche Positionen werden in der Ansicht gruppiert, ihre ursprünglichen Einträge bleiben erhalten. Alte Projekte beginnen ohne Rückzahlungen. Erst beim Speichern wird auf Dateiformat 3 aktualisiert; danach ist mindestens App-Version 0.4 erforderlich. Ältere App-Versionen verweigern das unbekannte Format, anstatt Informationen zu überschreiben.
+Bestehende Projekte aus v0.2, v0.3 und v0.4 werden weiterhin geladen. Fehlende Einkaufsdaten erscheinen als **Datum unbekannt (Altbestand)**; die App erfindet kein Datum. Bereits vorhandene gleiche Positionen werden in der Ansicht gruppiert, ihre ursprünglichen Einträge bleiben erhalten. Fehlende Rückzahlungen und Gutschriften beginnen als leeres Protokoll. Erst beim Speichern wird auf Dateiformat 4 aktualisiert; danach ist mindestens App-Version 0.5 erforderlich. Ältere App-Versionen verweigern das unbekannte Format, anstatt Informationen zu überschreiben.
 
 ## Lokale Daten und Sicherung
 

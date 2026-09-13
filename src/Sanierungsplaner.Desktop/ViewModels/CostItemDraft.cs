@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using Sanierungsplaner.Desktop.Models;
+using Sanierungsplaner.Desktop.Commands;
 
 namespace Sanierungsplaner.Desktop.ViewModels;
 
@@ -31,6 +32,35 @@ public sealed class CostItemDraft : INotifyPropertyChanged
             ["Tobias"] = CostPlanViewModel.Format(item?.Payments.Tobias ?? 0)
         };
         _initial = new(_values);
+        FillAmountCommand = new RelayCommand(p => FillAmount((string)p!), p => p is string person && new[] { "Lea", "Wolfgang", "Jennifer", "Tobias" }.Contains(person));
+    }
+    public RelayCommand FillAmountCommand { get; }
+    private void FillAmount(string person)
+    {
+        try
+        {
+            var quantity = Number("Quantity");
+            var price = Number("UnitPrice");
+            if (quantity <= 0 || quantity > 1000000 || decimal.Round(quantity, 3) != quantity
+                || price < 0 || price > 1000000 || decimal.Round(price, 2) != price)
+                throw new InvalidDataException("Bitte zuerst eine gültige Menge und einen Einzelpreis eingeben.");
+            var total = decimal.Round(quantity * price, 2, MidpointRounding.AwayFromZero);
+            decimal others = 0;
+            foreach (var other in new[] { "Lea", "Wolfgang", "Jennifer", "Tobias" }.Where(p => p != person))
+            {
+                var amount = Number(other);
+                if (amount < 0 || amount > 1000000000m || decimal.Round(amount, 2) != amount)
+                    throw new InvalidDataException("Bitte zuerst die Zahlungen der anderen Personen prüfen.");
+                others += amount;
+            }
+            if (others > total) throw new InvalidDataException("Die Zahlungen der anderen Personen übersteigen bereits die Positionskosten.");
+            if (total - others > 1000000000m) throw new InvalidDataException("Der Betrag für eine Person darf höchstens 1.000.000.000 € betragen.");
+            _values[person] = CostPlanViewModel.Format(total - others);
+            if (total > 0 && _values["Status"] == "Geplant") _values["Status"] = "Gekauft";
+            _error = "";
+        }
+        catch (InvalidDataException error) { _error = error.Message; }
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(string.Empty));
     }
     public string this[string key]
     {

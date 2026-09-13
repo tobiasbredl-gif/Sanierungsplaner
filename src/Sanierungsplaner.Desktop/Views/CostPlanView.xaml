@@ -7,6 +7,7 @@
         <Style x:Key="OptionalMessage" TargetType="TextBlock"><Setter Property="Margin" Value="0,0,0,12" /><Style.Triggers><Trigger Property="Text" Value=""><Setter Property="Visibility" Value="Collapsed" /></Trigger></Style.Triggers></Style>
     </UserControl.Resources>
     <StackPanel>
+        <Button Content="+ Verkauf / Gutschrift" Command="{Binding AddCreditCommand}" HorizontalAlignment="Left" Margin="0,0,0,16" />
         <TextBlock Text="{Binding Error}" Style="{StaticResource OptionalMessage}" Foreground="#852D14" AutomationProperties.LiveSetting="Assertive" />
         <TextBlock Text="{Binding Notice}" Style="{StaticResource OptionalMessage}" Foreground="#176B56" AutomationProperties.LiveSetting="Polite" />
         <Border Style="{StaticResource Panel}">
@@ -31,9 +32,24 @@
                         </Border>
                     </DataTemplate></ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <TextBlock Text="Rückzahlungen senken den offenen Betrag und werden Tobias zugerechnet. Die ursprünglichen Einkäufe und die Gesamtkosten bleiben erhalten." FontSize="12" Foreground="#596B62" Margin="0,16,0,0" />
+                <TextBlock Text="Rückzahlungen werden Tobias zugerechnet. Verkaufserlöse senken die Nettoausgaben des Geldempfängers. Ein negativer Betrag bedeutet einen Überschuss. Ursprüngliche Einkäufe bleiben erhalten." FontSize="12" Foreground="#596B62" Margin="0,16,0,0" />
             </StackPanel>
         </Border>
+        <Expander Header="Gutschriften und Verkäufe" Margin="0,0,0,16">
+            <StackPanel Margin="0,12,0,0">
+                <TextBlock Text="{Binding CreditsHint}" Foreground="#596B62" Margin="0,0,0,12" />
+                <TextBlock Text="{Binding IncomeLabel}" Foreground="#176B56" FontSize="24" FontWeight="SemiBold" Margin="0,0,0,12" />
+                <ItemsControl ItemsSource="{Binding CreditHistory}"><ItemsControl.ItemTemplate><DataTemplate>
+                    <Border Style="{StaticResource Panel}"><StackPanel>
+                        <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding AmountLabel}" Foreground="#176B56" FontSize="22" FontWeight="SemiBold" Margin="0,8,0,8" />
+                        <TextBlock Text="{Binding DetailLabel}" /><TextBlock Text="{Binding RecordedLabel}" Foreground="#596B62" FontSize="12" Margin="0,6,0,0" />
+                        <TextBlock Text="{Binding Note}" Margin="0,8,0,0" />
+                        <Button Content="Stornieren" Command="{Binding DataContext.ReverseCreditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" HorizontalAlignment="Left" Margin="0,12,0,0" />
+                    </StackPanel></Border>
+                </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+            </StackPanel>
+        </Expander>
         <Expander Header="Rückzahlungsprotokoll" Margin="0,0,0,16">
             <StackPanel Margin="0,12,0,0">
                 <TextBlock Text="{Binding LedgerHint}" Foreground="#596B62" Margin="0,0,0,12" />
@@ -57,10 +73,12 @@
                 <UniformGrid Columns="2" Margin="0,16,0,0">
                     <StackPanel Margin="0,0,12,16"><TextBlock Text="Kalkulierte Kosten" Foreground="#596B62" /><TextBlock Text="{Binding TotalLabel}" FontSize="24" FontWeight="SemiBold" /></StackPanel>
                     <StackPanel Margin="0,0,0,16"><TextBlock Text="Tatsächlich bezahlt" Foreground="#596B62" /><TextBlock Text="{Binding PaidLabel}" FontSize="24" FontWeight="SemiBold" /></StackPanel>
+                    <StackPanel Margin="0,0,12,16"><TextBlock Text="Verkaufserlöse / Gutschriften" Foreground="#596B62" /><TextBlock Text="{Binding IncomeLabel}" FontSize="24" FontWeight="SemiBold" Foreground="#176B56" /></StackPanel>
+                    <StackPanel Margin="0,0,0,16"><TextBlock Text="Nettoausgaben nach Gutschriften" Foreground="#596B62" /><TextBlock Text="{Binding NetPaidLabel}" FontSize="24" FontWeight="SemiBold" /></StackPanel>
                     <StackPanel Margin="0,0,12,16"><TextBlock Text="Noch zu bezahlen" Foreground="#596B62" /><TextBlock Text="{Binding OutstandingLabel}" FontSize="20" /></StackPanel>
                     <StackPanel Margin="0,0,0,16"><TextBlock Text="Restbudget nach Zahlungen" Foreground="#596B62" /><TextBlock Text="{Binding RemainingLabel}" FontSize="20" /></StackPanel>
                 </UniformGrid>
-                <TextBlock Text="Budget minus kalkulierte Kosten (Minus = Überschreitung)" Foreground="#596B62" />
+                <TextBlock Text="Budget minus kalkulierte Kosten plus Einnahmen (Minus = Überschreitung)" Foreground="#596B62" />
                 <TextBlock Text="{Binding ForecastLabel}" FontSize="20" FontWeight="SemiBold" />
             </StackPanel>
         </Border>
