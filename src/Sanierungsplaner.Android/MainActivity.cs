@@ -31,12 +31,20 @@ public partial class MainActivity : Activity
  CostPlanViewModel Plan => model.CostPlan;
  protected override void OnCreate(Bundle? state)
  {
-  base.OnCreate(state);
+  base.OnCreate(state); LoadIdentity();
   model = new MainWindowViewModel(new JsonProjectStore(System.IO.Path.Combine(FilesDir!.AbsolutePath, "Projects")), prompt, costs, repayments, sales, incoming);
   RestoreDraft();
   Render();
  }
- protected override void OnPause() { PersistDraft(); base.OnPause(); }
+ readonly Handler autoSyncHandler=new(Looper.MainLooper!);
+ Action? autoSyncTick;
+ protected override void OnResume()
+ {
+  base.OnResume();
+  autoSyncTick ??= () => { if(model!=null)Run(()=>Synchronize(true));autoSyncHandler.PostDelayed(autoSyncTick!,60000); };
+  autoSyncHandler.PostDelayed(autoSyncTick,1500);
+ }
+ protected override void OnPause() { if(autoSyncTick!=null)autoSyncHandler.RemoveCallbacks(autoSyncTick);PersistDraft(); base.OnPause(); }
  public override void OnBackPressed() => Run(Back);
  void Run(Func<Task> action) => _ = Safe(action);
  async Task Safe(Func<Task> action)
@@ -86,7 +94,7 @@ public partial class MainActivity : Activity
   page = Stack(); page.SetPadding(Dp(18),Dp(28),Dp(18),Dp(28)); page.SetBackgroundColor(AColor.ParseColor("#F4F6F3"));
   scroll.AddView(page); SetContentView(scroll);
   Text(page,"S /  Sanierungsplaner",26,true);
-  Text(page,"Android-Testversion 0.9.0 · Lokal und offline",12);
+  Text(page,"Android 0.10.0 · Offline und sicheres Heimnetz",12);
   if(model.ShowAbout) About();
   else if(!model.IsEditing) Home();
   else Project();
@@ -97,6 +105,7 @@ public partial class MainActivity : Activity
  void Home()
  {
   Text(page,"Deine Projekte",23,true);
+  Button(page,"PC koppeln / WLAN-Abgleich",()=>{model.ShowAboutCommand.Execute(null);Render();return Task.CompletedTask;});
   Button(page,"+ Neues Projekt",()=> { model.NewProjectCommand.Execute(null); openedId=null; Render(); return Task.CompletedTask; }, model.NewProjectCommand.CanExecute(null));
   foreach(var p in model.Projects)
   {
@@ -109,15 +118,18 @@ public partial class MainActivity : Activity
  }
  void About()
  {
+  SyncOptions(page);
   Text(page,"Deine Daten bleiben auf deinem Handy",22,true);
   Text(page,"Alle Funktionen der aktuellen Desktop-Version: Projekte, Einkäufe, Planung, 19 % MwSt., Personenzahlungen, Rückzahlungen, Beiträge an Tobias und Verkäufe mit Stornoprotokollen.");
-  Text(page,"Diese erste Testversion synchronisiert noch nicht mit dem PC. Auf Handy und PC sind die Projekte getrennt. Die sichere WLAN-Kopplung folgt später.");
+  Text(page,"Nach Freigabe am PC werden Projekte verschlüsselt im Heimnetz abgeglichen. Widerrufene Geräte werden beim nächsten Verbindungsversuch abgewiesen. Offline bleibt der zuletzt bestätigte Rollenstand bestehen.");
   Text(page,"Android 8 oder neuer. Daten liegen im privaten App-Speicher. Beim Deinstallieren werden sie gelöscht. Ein APK-Update über die bestehende Installation erhält sie.");
   Button(page,"Zurück",()=> {model.ShowHomeCommand.Execute(null);Render();return Task.CompletedTask;});
  }
  void Project()
  {
   Button(page,"← Alle Projekte",Back);
+  Button(page,"Jetzt mit PC abgleichen",()=>Synchronize(false),binding!=null);
+  Text(page,binding?.Role is string role ? "Geräterolle: "+role : "Nicht freigegeben · Erstattungen gesperrt",12);
   Text(page,string.IsNullOrWhiteSpace(model.Name)?"Neues Projekt":model.Name,23,true);
   var nav = new LinearLayout(this) { Orientation=Orientation.Horizontal };
   page.AddView(nav);
@@ -155,7 +167,7 @@ public partial class MainActivity : Activity
    if(person.Person!="Tobias")
    {
     Button(card,"An Tobias zahlen",()=>RecordIncoming(person.Person));
-    Button(card,"Tobias erstattet an "+person.Person,()=>RecordRefund(person.Person), Plan.ReimburseCommand.CanExecute(person));
+    if(IsTobias) Button(card,"Tobias erstattet an "+person.Person,()=>RecordRefund(person.Person), Plan.ReimburseCommand.CanExecute(person));
    }
   }
   Text(page,"Beiträge an Tobias senken nur seine Nettoausgaben. Die Ausgaben der zahlenden Person bleiben unverändert.",13);

@@ -21,7 +21,12 @@ try
  var repeat=new CostItemDraft(null);repeat["Material"]="estrich";repeat["UnitPrice"]="10";repeat.FillAmountCommand.Execute("Jennifer");costs.Pending=repeat.Build();model.CostPlan.AddCommand.Execute(null);
  Check(model.CostPlan.Groups.Count==2 && model.CostPlan.Groups[0].Entries.Count==2,"Wiederholte Einkäufe gruppieren");
  var typo=repeat.Build()! with {Material="Estrcih"};Check(CostItemMatching.Similar(typo,model.CostPlan.Items).Count==1,"Tippfehler erkannt");
- repayments.Pending=new Reimbursement(Guid.NewGuid(),"Jennifer",10,DateOnly.FromDateTime(DateTime.Today),DateTimeOffset.UtcNow,"");model.CostPlan.ReimburseCommand.Execute(model.CostPlan.People[2]);
+ var protectedEntry=new Reimbursement(Guid.NewGuid(),"Jennifer",10,DateOnly.FromDateTime(DateTime.Today),DateTimeOffset.UtcNow,"");
+ repayments.Pending=protectedEntry;Check(repayments.Record("Jennifer",10)==null&&repayments.Pending==null,"Default role denies and clears pending reimbursement");
+ repayments.IsAuthorized=()=>true;repayments.Pending=protectedEntry;Check(repayments.Record("Jennifer",10)==null,"Role alone does not replace device confirmation");
+ repayments.AuthorizeOnce();Check(repayments.ConfirmReversal(protectedEntry)&&!repayments.ConfirmReversal(protectedEntry),"Device approval is consumed once");
+ repayments.AuthorizeOnce();repayments.IsAuthorized=()=>false;Check(!repayments.ConfirmReversal(protectedEntry),"Revoked role invalidates pending approval");
+ repayments.IsAuthorized=()=>true;repayments.AuthorizeOnce();repayments.Pending=new Reimbursement(Guid.NewGuid(),"Jennifer",10,DateOnly.FromDateTime(DateTime.Today),DateTimeOffset.UtcNow,"");model.CostPlan.ReimburseCommand.Execute(model.CostPlan.People[2]);
  Check(model.CostPlan.People[2].Amount==0 && model.CostPlan.People[3].Amount==150,"Rückzahlung überträgt Ausgaben");
  model.SelectedProjectTab=2;model.SaveProjectCommand.Execute(null);Check(!model.IsDirty && model.SelectedProjectTab==2,"Speichern erhält Ansicht");
  var reloaded=new MainWindowViewModel(new JsonProjectStore(folder),prompt,costs,repayments,sales,incoming);reloaded.OpenProjectCommand.Execute(reloaded.Projects[0]);Check(reloaded.SelectedProjectTab==1 && reloaded.CostPlan.NetPaid==150 && reloaded.CostPlan.IncomingTotal==1000,"Neustart und Navigation");

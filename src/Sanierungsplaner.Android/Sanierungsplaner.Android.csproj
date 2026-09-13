@@ -4,8 +4,8 @@
     <SupportedOSPlatformVersion>26.0</SupportedOSPlatformVersion>
     <OutputType>Exe</OutputType>
     <ApplicationId>de.sanierungsplaner.android</ApplicationId>
-    <ApplicationVersion>1</ApplicationVersion>
-    <ApplicationDisplayVersion>0.9.0</ApplicationDisplayVersion>
+    <ApplicationVersion>2</ApplicationVersion>
+    <ApplicationDisplayVersion>0.10.0</ApplicationDisplayVersion>
     <ApplicationTitle>Sanierungsplaner</ApplicationTitle>
     <Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings>
     <AndroidPackageFormats>apk</AndroidPackageFormats>
@@ -16,6 +16,7 @@
     <AndroidLinkMode>None</AndroidLinkMode>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../Sanierungsplaner.SharedSync/*.cs" Link="SyncShared/%(Filename)%(Extension)" />
     <!-- Shared source is intentional: Android uses the tested desktop rules without a WPF dependency. -->
     <Compile Include="../Sanierungsplaner.Desktop/Models/*.cs" Link="Shared/Models/%(Filename)%(Extension)" />
     <Compile Include="../Sanierungsplaner.Desktop/ViewModels/*.cs" Link="Shared/ViewModels/%(Filename)%(Extension)" />

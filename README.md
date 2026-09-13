@@ -1,6 +1,6 @@
 # Sanierungsplaner
 
-Native Windows-Desktop-App mit C# und WPF auf .NET 10. Version 0.9.0 bietet lokale Projekte, automatisch zusammengefasste Einkäufe mit Datum protokollierte Rückzahlungen von Tobias an Lea, Wolfgang und Jennifer sowie Verkaufsgutschriften und automatische Zahlungsbeträge.
+Native Windows-Desktop-App mit C# und WPF auf .NET 10. Version 0.10.0 bietet lokale Projekte, automatisch zusammengefasste Einkäufe mit Datum protokollierte Rückzahlungen von Tobias an Lea, Wolfgang und Jennifer sowie Verkaufsgutschriften und automatische Zahlungsbeträge.
 
 ## Ein Projekt anlegen
 
@@ -116,7 +116,7 @@ docs/                      Architektur und Umfang
 
 ## Umfang dieser Version
 
-Enthalten sind Projektname (Pflichtfeld, maximal 120 Zeichen), Objektadresse (300 Zeichen), Notizen (10.000 Zeichen), Zeitstempel und Kostenpositionen samt Zahlungen und Budget. Excel-Export, Auswertungen nach Raum/Etage, Android-App und abgesicherte WLAN-Synchronisierung folgen in weiteren Schritten. Die abgestimmten Anforderungen stehen in [docs/product-requirements.md](docs/product-requirements.md).
+Enthalten sind Projektname (Pflichtfeld, maximal 120 Zeichen), Objektadresse (300 Zeichen), Notizen (10.000 Zeichen), Zeitstempel und Kostenpositionen samt Zahlungen und Budget. Excel-Export und Auswertungen nach Raum/Etage folgen in weiteren Schritten. Android-App und abgesicherter Heimnetz-Abgleich sind vorhanden. Die abgestimmten Anforderungen stehen in [docs/product-requirements.md](docs/product-requirements.md).
 
 Bestehende Projekte aus v0.2, v0.3 und v0.4 werden weiterhin geladen. Fehlende Einkaufsdaten erscheinen als **Datum unbekannt (Altbestand)**; die App erfindet kein Datum. Bereits vorhandene gleiche Positionen werden in der Ansicht gruppiert, ihre ursprünglichen Einträge bleiben erhalten. Fehlende Rückzahlungen und Gutschriften beginnen als leeres Protokoll. Erst beim Speichern wird auf Dateiformat 6 aktualisiert; danach ist mindestens App-Version 0.8 erforderlich. Ältere App-Versionen verweigern das unbekannte Format, anstatt Informationen zu überschreiben.
 
@@ -128,7 +128,7 @@ Es gibt noch keine automatische Datensicherung. Zum Sichern bei geschlossener Ap
 
 Bei einem Lesefehler zeigt die App den betroffenen Dateinamen an und sperrt neue Bearbeitungen. Die Originaldateien werden nicht überschrieben. Nach Behebung des Problems **Erneut laden** wählen. Bei einem Speicherkonflikt bleiben die Formulareingaben erhalten: Änderungen bei Bedarf kopieren, über **Alle Projekte** den alten Entwurf verwerfen und **Erneut laden** wählen.
 
-Die Anwendung arbeitet lokal, stellt keine Netzwerkverbindungen her und enthält weder Anmeldung noch Credentials, Tokens oder Backend. GitHub-Zugangsdaten gehören ausschließlich zur Entwicklungsumgebung und niemals in die App oder ins Repository.
+Projekte werden lokal gespeichert. Optional verbindet sich Android über verschlüsseltes HTTPS mit dem ausdrücklich gestarteten PC-Heimnetz-Dienst. Individuelle Gerätefreigaben und die geschützte Tobias-Rolle sind in [docs/secure-sync.md](docs/secure-sync.md) beschrieben. GitHub-Zugangsdaten gehören ausschließlich zur Entwicklungsumgebung und niemals in die App oder ins Repository.
 
 Weitere Entscheidungen stehen in [docs/architecture.md](docs/architecture.md). Einstieg in die verwendete UI-Technik: [Microsoft WPF-Dokumentation](https://learn.microsoft.com/dotnet/desktop/wpf/).
 
@@ -154,8 +154,8 @@ Das Protokoll erhält Originale und Korrekturen als zusätzliche Stornos. Gespei
 
 Bei Lea, Wolfgang und Jennifer öffnet **An Tobias zahlen** direkt die Erfassung ihres Kostenanteils, auch bei 0 € offen. Die Spalte **An Tobias bezahlt** zeigt ihre bisherigen Beiträge. Beispiel: Tobias bezahlt 4.000 €, Lea zahlt 1.000 € dazu: Tobias trägt netto 3.000 €, Lea bleibt bei 0 € offen und hat separat 1.000 € an Tobias bezahlt. Der Button Zurückzahlen bleibt für Erstattungen von Tobias an die jeweilige Person.
 
-## Android-Testversion 0.9.0
+## Android-Testversion 0.10.0
 
-Die native Android-App übernimmt die Funktionen der Windows-Version 0.9.0 mit derselben Berechnungs- und Speicherlogik. Die erste APK arbeitet lokal auf Tobias' Testhandy. Installation, Funktionsvergleich und Bauanleitung stehen in [docs/android.md](docs/android.md). Handy und PC synchronisieren noch nicht; die sichere WLAN-Kopplung folgt separat.
+Die native Android-App übernimmt die Funktionen der Windows-Version 0.10.0 mit derselben Berechnungs- und Speicherlogik. Die erste APK arbeitet lokal auf Tobias' Testhandy. Installation, Funktionsvergleich und Bauanleitung stehen in [docs/android.md](docs/android.md). Die PC-Kopplung weist dem Handy eine Rolle zu. Nur Tobias kann mobil Erstattungen auslösen und stornieren, jeweils nach Bestätigung der Android-Gerätesperre. Siehe [Kopplungsanleitung](docs/secure-sync.md).
 
 Oben in Kosten & Zahlungen zeigen Windows und Android die aktuellen Netto-Gesamtausgaben sowie separat geplante Ausgaben. Der ursprünglich bezahlte Betrag bleibt darunter sichtbar. Geplante Positionen zählen erst bei tatsächlichen Zahlungen zu den aktuellen Ausgaben.

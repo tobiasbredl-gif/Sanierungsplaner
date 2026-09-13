@@ -4,5 +4,6 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Sanierungsplaner.SmokeTests/Sanierungsplaner.SmokeTests.csproj" />
+    <Project Path="tests/Sanierungsplaner.SyncTests/Sanierungsplaner.SyncTests.csproj" />
   </Folder>
 </Solution>

@@ -34,7 +34,7 @@ public partial class MainActivity
   dialog.SetCancelable(false);dialog.Show();
   dialog.GetButton((int)DialogButtonType.Positive)!.Click+=(_,_)=>{var result=build();if(result==null){errorView.Text=error();scroll.FullScroll(FocusSearchDirection.Down);return;}dialog.Dismiss();done.TrySetResult(result);};
   dialog.GetButton((int)DialogButtonType.Negative)!.Click+=(_,_)=>Run(async()=>{if(await Confirm("Eingabe verwerfen?","Die Eingaben in diesem Fenster werden nicht übernommen.")){dialog.Dismiss();done.TrySetResult(null);}});
-  return await done.Task;
+  formOpen=true;try{return await done.Task;}finally{formOpen=false;}
  }
  void Select(LinearLayout box,string label,IReadOnlyList<string> values,string selected,Action<string> changed)
  {
@@ -130,7 +130,7 @@ public partial class MainActivity
    Text(box,"Rückzahlungsdatum");DateField(box,draft.Date,v=>draft.Date=v);
    Field(box,"Notiz",draft.Note,v=>draft.Note=v,max:500,multiline:true);
   },draft.Build,()=>draft.Error);
-  if(result==null)return;repayments.Pending=result;Plan.ReimburseCommand.Execute(Plan.People.First(p=>p.Person==person));PersistDraft();Render();
+  if(result==null||!await ConfirmOwner())return;repayments.AuthorizeOnce();repayments.Pending=result;Plan.ReimburseCommand.Execute(Plan.People.First(p=>p.Person==person));PersistDraft();Render();
  }
  void IncomingHistory(LinearLayout box)
  {
@@ -157,7 +157,7 @@ public partial class MainActivity
   foreach(var entry in Plan.History)
   {
    var card=Stack(box,true);Text(card,entry.Description,18,true);Text(card,entry.RecordedLabel,12);Text(card,entry.Note);
-   Button(card,"Stornieren",async()=>{if(await Confirm("Rückzahlung stornieren?","Der Originaleintrag bleibt erhalten; die Kostenübernahme wird aufgehoben.")){Plan.ReverseCommand.Execute(entry);PersistDraft();Render();}},Plan.ReverseCommand.CanExecute(entry));
+   if(IsTobias) Button(card,"Stornieren",async()=>{if(await Confirm("Rückzahlung stornieren?","Der Originaleintrag bleibt erhalten; die Kostenübernahme wird aufgehoben.") && await ConfirmOwner()){repayments.AuthorizeOnce();Plan.ReverseCommand.Execute(entry);PersistDraft();Render();}},Plan.ReverseCommand.CanExecute(entry));
   }
  }
 }

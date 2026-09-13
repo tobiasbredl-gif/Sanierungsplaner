@@ -35,7 +35,7 @@ Diese Anforderungen wurden aus dem früheren Planungsgespräch übernommen und d
 - Kein notwendiger Cloud-Dienst, keine Freigabe ins öffentliche Internet; Netzwerkzugriff auf das private Heimnetz begrenzen.
 - Konfliktbehandlung und Tests für unautorisierte Geräte gehören zur Umsetzung vor Freigabe der Synchronisierung.
 
-Die aktuelle Desktop-Version besitzt keine Netzwerkfreigabe. Beschreibungen früherer Prototypen sind kein Nachweis, dass diese Funktionen in dieser neu aufgebauten Codebasis bereits existieren.
+Version 0.10.0 enthält den ausdrücklich startbaren Heimnetz-Dienst, verschlüsselte Gerätekopplung, PC-seitige Rollenvergabe und Widerruf. Details und Grenzen stehen in secure-sync.md.
 
 ## Ergänzungen in Version 0.5
 

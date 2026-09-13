@@ -11,9 +11,13 @@ public sealed class CostItemEditor : ICostItemEditor
 }
 public sealed class ReimbursementEditor : IReimbursementEditor
 {
+ public Func<bool> IsAuthorized { get; set; } = () => false;
+ private bool approved;
+ public void AuthorizeOnce() { approved=IsAuthorized(); }
+ private bool ConsumeApproval() { var result=approved&&IsAuthorized();approved=false;return result; }
  public Reimbursement? Pending { get; set; }
- public Reimbursement? Record(string recipient, decimal outstanding) { var value = Pending; Pending = null; return value; }
- public bool ConfirmReversal(Reimbursement entry) => true;
+ public Reimbursement? Record(string recipient, decimal outstanding) { var value = Pending; Pending = null; return ConsumeApproval() ? value : null; }
+ public bool ConfirmReversal(Reimbursement entry) => ConsumeApproval();
 }
 public sealed class SalesCreditEditor : ISalesCreditEditor
 {

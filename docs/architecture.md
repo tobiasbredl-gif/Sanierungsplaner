@@ -56,7 +56,7 @@ Optional akzeptiert der Test einen PNG-Zielpfad als einziges Argument. Neben der
 
 ## Weitere Ausbauschritte
 
-Die aus dem früheren Gespräch übernommenen Vorgaben stehen in [product-requirements.md](product-requirements.md). Dazu gehören Excel-Export, Android-Offline-Eingaben und ausschließlich authentifizierte, verschlüsselte WLAN-Synchronisierung mit expliziter Gerätefreigabe. Diese Netzwerkanbindung ist in Version 0.6.0 noch nicht vorhanden.
+Die aus dem früheren Gespräch übernommenen Vorgaben stehen in [product-requirements.md](product-requirements.md). Dazu gehören Excel-Export, Android-Offline-Eingaben und ausschließlich authentifizierte, verschlüsselte WLAN-Synchronisierung mit expliziter Gerätefreigabe. Seit Version 0.10.0 ist diese Netzwerkanbindung vorhanden; siehe [Sicherer Heimnetz-Abgleich](secure-sync.md).
 
 ## Verkaufsgutschriften und automatische Beträge
 
