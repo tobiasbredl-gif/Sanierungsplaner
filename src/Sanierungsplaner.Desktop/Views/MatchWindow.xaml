@@ -1,0 +1,21 @@
+<Window x:Class="Sanierungsplaner.Desktop.Views.MatchWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Ähnliche Position gefunden" Width="620" Height="480" MinWidth="520" MinHeight="400"
+        WindowStartupLocation="CenterOwner" Style="{StaticResource {x:Type Window}}">
+    <Grid Background="#F4F6F3"><DockPanel Margin="24">
+        <StackPanel DockPanel.Dock="Top">
+            <TextBlock Text="Meinst du eine vorhandene Position?" FontSize="23" FontWeight="SemiBold" />
+            <TextBlock x:Name="IncomingLabel" Margin="0,12,0,16" />
+        </StackPanel>
+        <WrapPanel DockPanel.Dock="Bottom" Margin="0,16,0,0">
+            <Button x:Name="MatchButton" Content="Ja, zusammenführen" Click="UseSelected" Margin="0,0,8,8" />
+            <Button x:Name="NewButton" Content="Nein, neue Position" Click="KeepNew" Margin="0,0,8,8" />
+            <Button Content="Abbrechen" IsCancel="True" Margin="0,0,0,8" />
+        </WrapPanel>
+        <ListBox x:Name="Candidates" AutomationProperties.Name="Ähnliche Positionen">
+            <ListBox.ItemTemplate><DataTemplate><StackPanel Margin="8">
+                <TextBlock Text="{Binding Material}" FontWeight="SemiBold" /><TextBlock Text="{Binding DetailLabel}" />
+            </StackPanel></DataTemplate></ListBox.ItemTemplate>
+        </ListBox>
+    </DockPanel></Grid>
+</Window>

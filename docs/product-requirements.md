@@ -13,6 +13,10 @@ Diese Anforderungen wurden aus dem früheren Planungsgespräch übernommen und d
 - Projektbudget, Restbudget und Abweichung der Kalkulation vom Budget.
 - Ausgaben nachvollziehbar je Person: **Lea, Wolfgang, Jennifer und Tobias**, jeweils eine eigene Summenzeile, zusätzlich Zahlungen je Position.
 - Geplante Kosten und tatsächlich geleistete Zahlungen getrennt ausweisen. Teilzahlungen und von mehreren Personen bezahlte Positionen sind möglich; keine automatische gleichmäßige Kostenaufteilung.
+- Rückzahlungen von Tobias an Lea, Wolfgang und Jennifer: Teil- oder Vollausgleich mit Übertrag des Betrags auf Tobias. Unveränderte ursprüngliche Einkäufe und Projektgesamtkosten. Protokoll mit Datum, Erfassungszeit und optionaler Notiz; Korrekturen durch protokollierte Stornos.
+- Menge und Betragsfelder beim ersten Fokus vollständig markieren, damit sofort überschrieben werden kann. Ohne Eingabe bleibt der Wert erhalten.
+- Wiederholte Einkäufe automatisch nach Name, Einheit, Raum und Etage gruppieren; Groß-/Kleinschreibung und zusätzliche Leerzeichen ignorieren. Jeder Einkauf behält sein Datum, Menge, Preis und Zahlende. Datum standardmäßig heute, für Nachträge änderbar.
+- Bei möglichen Tippfehlern konkrete ähnliche Positionen vorschlagen und nur nach Bestätigung zusammenführen. Eindeutige Treffer benötigen keine Rückfrage.
 
 ## Weitere Ausbauschritte
 

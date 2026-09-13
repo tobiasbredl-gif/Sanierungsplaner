@@ -11,9 +11,15 @@ public sealed class CostItemDraft : INotifyPropertyChanged
     private readonly Dictionary<string, string> _values;
     private readonly Dictionary<string, string> _initial;
     private string _error = "";
+    private readonly DateTime? _initialDate;
+    private readonly DateTimeOffset? _recordedAt;
+    public DateTime? Date { get; set; }
     public CostItemDraft(CostItem? item)
     {
         _id = item?.Id ?? Guid.NewGuid();
+        _recordedAt = item is null ? DateTimeOffset.UtcNow : item.RecordedAt;
+        Date = item is null ? DateTime.Today : item.Date?.ToDateTime(TimeOnly.MinValue);
+        _initialDate = Date;
         _values = new()
         {
             ["Material"] = item?.Material ?? "", ["Floor"] = item?.Floor ?? "", ["Room"] = item?.Room ?? "",
@@ -36,7 +42,7 @@ public sealed class CostItemDraft : INotifyPropertyChanged
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(string.Empty));
         }
     }
-    public bool IsDirty => _values.Any(pair => _initial[pair.Key] != pair.Value);
+    public bool IsDirty => Date != _initialDate || _values.Any(pair => _initial[pair.Key] != pair.Value);
     public IReadOnlyList<string> Statuses => CostItem.Statuses;
     public string Error => _error;
     public string TotalLabel
@@ -53,9 +59,12 @@ public sealed class CostItemDraft : INotifyPropertyChanged
     {
         try
         {
+            if (Date is null && _recordedAt is not null) throw new InvalidDataException("Bitte ein Datum angeben.");
+            if (Date?.Date > DateTime.Today) throw new InvalidDataException("Das Datum darf nicht in der Zukunft liegen.");
             var item = new CostItem(_id, this["Material"].Trim(), this["Floor"].Trim(), this["Room"].Trim(),
                 Number("Quantity"), this["Unit"].Trim(), Number("UnitPrice"), this["Status"],
-                new Payments(Number("Lea"), Number("Wolfgang"), Number("Jennifer"), Number("Tobias")));
+                new Payments(Number("Lea"), Number("Wolfgang"), Number("Jennifer"), Number("Tobias")))
+            { Date = Date is null ? null : DateOnly.FromDateTime(Date.Value), RecordedAt = _recordedAt };
             item.Validate();
             return item;
         }

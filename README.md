@@ -1,6 +1,6 @@
 # Sanierungsplaner
 
-Native Windows-Desktop-App mit C# und WPF auf .NET 10. Version 0.3.0 bietet lokale Projekte, eine gemeinsame Kostenliste und eine Ausgabenübersicht mit je einer Zeile für Lea, Wolfgang, Jennifer und Tobias.
+Native Windows-Desktop-App mit C# und WPF auf .NET 10. Version 0.4.0 bietet lokale Projekte, automatisch zusammengefasste Einkäufe mit Datum und protokollierte Rückzahlungen von Tobias an Lea, Wolfgang und Jennifer.
 
 ## Ein Projekt anlegen
 
@@ -14,12 +14,36 @@ Die Projekte werden beim nächsten App-Start wieder geladen. Beim Verlassen eine
 ## Kosten und Zahlungen erfassen
 
 1. Ein Projekt öffnen und **Kosten & Zahlungen** auswählen.
-2. Über **Position hinzufügen** Material/Beschreibung, Menge, Einheit und Einzelpreis erfassen. Raum und Etage sind optional. Es gibt keine Kategorien oder Unterteilung nach Gewerken.
+2. Über **Einkauf / Position erfassen** Material/Beschreibung, Datum, Menge, Einheit und Einzelpreis erfassen. Das Datum ist mit heute vorbelegt und für ältere Einkäufe änderbar. Raum und Etage sind optional. Es gibt keine Kategorien oder Unterteilung nach Gewerken.
 3. Den Status **Geplant**, **Gekauft** oder **Verbaut** wählen.
 4. Bereits gezahlte Beträge in den vier Personenzeilen eintragen; für alle anderen steht dort 0,00. Teilzahlungen und mehrere Zahlende pro Position sind möglich.
 5. **Position übernehmen**, anschließend **Projekt speichern** anklicken. Übernehmen allein sichert noch nicht auf der Festplatte.
 
-Die vier Summenzeilen bleiben auch bei 0,00 € sichtbar. Jede Position lässt sich bearbeiten oder nach Rückfrage entfernen. Geplante Positionen dürfen noch keine Zahlungen enthalten. Gekauft/Verbaut bedeutet nicht automatisch bezahlt: Dafür zählen ausschließlich die eingetragenen Zahlungen. Eine Zahlung über den Positionskosten wird abgewiesen.
+Die vier Summenzeilen bleiben auch bei 0,00 € sichtbar. Unter **Einzelne Einträge mit Datum** lassen sich die einzelnen Einkäufe ansehen, bearbeiten oder nach Rückfrage entfernen. Geplante Positionen dürfen noch keine Zahlungen enthalten. Gekauft/Verbaut bedeutet nicht automatisch bezahlt: Dafür zählen ausschließlich die eingetragenen Zahlungen. Eine Zahlung über den Positionskosten wird abgewiesen.
+
+Beim ersten Anklicken bzw. beim Tastaturfokus werden Menge, Einzelpreis, Zahlungen, Projektbudget und Rückzahlungsbetrag vollständig markiert. Tippen ersetzt den bisherigen Inhalt sofort. Ohne Eingabe bleibt der Wert erhalten; ein weiterer Klick im bereits fokussierten Feld erlaubt die normale Cursorpositionierung.
+
+## Wiederholte Einkäufe
+
+Neue Einträge mit gleichem Namen, gleicher Einheit, gleichem Raum und gleicher Etage werden automatisch unter einer Position angezeigt. Groß-/Kleinschreibung und überflüssige Leerzeichen spielen keine Rolle. Einträge mit abweichender Einheit oder Zuordnung bleiben getrennt.
+
+Beispiel: 10 kg Estrich zu 1 € und später 5 kg zu 2 € erscheinen als **Estrich: 15 kg, 20 €**. Beide Einkäufe behalten ihr eigenes Datum, ihren Einzelpreis und ihre Zahlungsaufteilung. Die Gesamtkosten sind die Summe der einzeln gerundeten Einkaufsbeträge; unterschiedliche Preise werden nicht überschrieben. Auch zwei tatsächlich getrennte Einkäufe am selben Tag bleiben im Verlauf erhalten.
+
+Bei leichten Tippfehlern wie **Estrcih** fragt die App, ob die vorhandene Position **Estrich** gemeint ist. Man kann einen vorgeschlagenen Treffer bestätigen, bewusst eine neue Position anlegen oder abbrechen. Ähnliche Namen werden niemals ohne Bestätigung zusammengeführt. Die Erkennung ist eine Schreibhilfe, keine automatische Materialbestimmung; unterschiedliche Zahlen in Materialnamen werden nicht als Tippfehler vorgeschlagen.
+
+## Rückzahlungen und Protokoll
+
+1. Unter **Kosten & Zahlungen** in der Zeile von Lea, Wolfgang oder Jennifer auf **Zurückzahlen** klicken.
+2. Den bereits zurückgezahlten Betrag erfassen. Der vollständige noch offene Betrag und das heutige Datum sind vorbelegt; Teilrückzahlungen und ein älteres Datum sind möglich. Optional eine Notiz ergänzen.
+3. **Rückzahlung übernehmen** und anschließend **Projekt speichern** klicken.
+
+Der offene Betrag der Person sinkt entsprechend. Dieselbe Summe erhöht Tobias' Ausgaben. Beispiel: Lea hat 100 € bezahlt; Tobias erstattet 100 €. Lea steht bei 0 €, Tobias trägt zusätzlich 100 €. Die ursprünglichen Einkäufe, Gesamtausgaben und das Restbudget bleiben unverändert. Bei späteren Einkäufen entsteht wieder ein offener Betrag. Die App erfasst Rückzahlungen lediglich; sie führt keine Banküberweisung aus.
+
+Im **Rückzahlungsprotokoll** stehen Empfänger, Betrag, Rückzahlungsdatum, Erfassungszeit und Notiz. Eine versehentliche Buchung lässt sich nach Rückfrage **stornieren**: Der ursprüngliche Eintrag bleibt erhalten, ein zusätzlicher Storno stellt die vorherigen Salden wieder her. Gespeicherte Protokolleinträge können über die App nicht überschrieben oder gelöscht werden. Dies ist ein lokales Anwendungsprotokoll, kein manipulationssicheres Finanzarchiv.
+
+Mehr als der offene Betrag kann nicht zurückgezahlt werden. Ebenso dürfen ursprüngliche Einkäufe nachträglich nicht so weit reduziert oder entfernt werden, dass die bereits erfolgten Rückzahlungen höher wären als die ursprünglichen Zahlungen. In diesem Fall zuerst den fehlerhaften Rückzahlungseintrag stornieren.
+
+## Budget
 
 Unter **Budget und Gesamtkosten** lässt sich das Projektbudget eintragen. Alle Werte sind Eurobeträge; Zahlen mit Dezimalkomma und ohne Tausendertrennzeichen eingeben. Beträge haben maximal zwei, Mengen maximal drei Nachkommastellen. Mengen und Einzelpreise sind auf 1.000.000 begrenzt, das Budget auf 1.000.000.000 €. Eine Kostenposition wird als Menge × Einzelpreis kaufmännisch auf Cent gerundet.
 
@@ -29,7 +53,7 @@ Unter **Budget und Gesamtkosten** lässt sich das Projektbudget eintragen. Alle 
 - **Restbudget:** Budget minus Zahlungen.
 - **Budget minus kalkulierte Kosten:** Verbleibender Spielraum in der Planung; negative Werte zeigen eine Überschreitung.
 
-Es gibt keine automatische Aufteilung der Kosten oder Berechnung von Schulden untereinander. Die Übersicht zeigt, wer tatsächlich bezahlt hat.
+Es gibt keine automatische gleichmäßige Aufteilung der Kosten. Die Übersicht zeigt die ursprünglichen Einkäufe, zurückerhaltene Beträge bzw. von Tobias übernommene Ausgaben und den jeweils verbleibenden Anteil.
 
 ## Voraussetzungen
 
@@ -83,7 +107,7 @@ docs/                      Architektur und Umfang
 
 Enthalten sind Projektname (Pflichtfeld, maximal 120 Zeichen), Objektadresse (300 Zeichen), Notizen (10.000 Zeichen), Zeitstempel und Kostenpositionen samt Zahlungen und Budget. Excel-Export, Auswertungen nach Raum/Etage, Android-App und abgesicherte WLAN-Synchronisierung folgen in weiteren Schritten. Die abgestimmten Anforderungen stehen in [docs/product-requirements.md](docs/product-requirements.md).
 
-Bestehende Projekte aus v0.2 werden mit Budget 0 und leerer Kostenliste geöffnet. Erst beim Speichern wird auf Dateiformat 2 aktualisiert; danach benötigen sie mindestens App-Version 0.3. Die bisherige Version 0.2 verweigert das unbekannte Format, anstatt Kosteninformationen zu überschreiben.
+Bestehende Projekte aus v0.2 und v0.3 werden weiterhin geladen. Fehlende Einkaufsdaten erscheinen als **Datum unbekannt (Altbestand)**; die App erfindet kein Datum. Bereits vorhandene gleiche Positionen werden in der Ansicht gruppiert, ihre ursprünglichen Einträge bleiben erhalten. Alte Projekte beginnen ohne Rückzahlungen. Erst beim Speichern wird auf Dateiformat 3 aktualisiert; danach ist mindestens App-Version 0.4 erforderlich. Ältere App-Versionen verweigern das unbekannte Format, anstatt Informationen zu überschreiben.
 
 ## Lokale Daten und Sicherung
 

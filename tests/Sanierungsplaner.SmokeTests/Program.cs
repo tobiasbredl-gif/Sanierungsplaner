@@ -14,7 +14,7 @@ using Sanierungsplaner.Desktop.Services;
 using Sanierungsplaner.Desktop.ViewModels;
 using Sanierungsplaner.Desktop.Views;
 
-internal static class Program
+internal static partial class Program
 {
     [STAThread]
     private static int Main(string[] args)
@@ -25,8 +25,11 @@ internal static class Program
             TestPersistence(Path.Combine(testRoot, "storage"));
             TestEditing(Path.Combine(testRoot, "editing"));
             TestCosts(Path.Combine(testRoot, "costs"));
+            TestMatching();
+            TestRepayments(Path.Combine(testRoot, "repayments"));
+            TestLegacyCosts(Path.Combine(testRoot, "legacy-costs"));
             TestWindow(Path.Combine(testRoot, "window"), args.FirstOrDefault());
-            Console.WriteLine("PASS: Speicherung, Kosten, vier Personensummen, Teilzahlungen, Migration, Fehlerfälle, Entwurfsschutz und WPF-Oberfläche.");
+            Console.WriteLine("PASS: Rückzahlungen, Stornos, Protokollschutz, Zusammenführung, Tippfehler, Datumsverlauf, Eingabefokus, Migration und bestehende Funktionen.");
             return 0;
         }
         catch (Exception exception)
@@ -62,18 +65,19 @@ internal static class Program
         Expect<InvalidDataException>(() => store.Load());
         Expect<InvalidDataException>(() => store.Save(updated, updated.Revision));
         Check(File.ReadAllText(file) == "{kaputt", "Beschädigte Datei bleibt erhalten");
-        File.WriteAllText(file, valid.Replace("\"SchemaVersion\": 2", "\"SchemaVersion\": 99"));
+        File.WriteAllText(file, valid.Replace("\"SchemaVersion\": 3", "\"SchemaVersion\": 99"));
         Expect<InvalidDataException>(() => store.Load());
         File.WriteAllText(file, valid);
         var legacy = JsonNode.Parse(valid)!;
         legacy["SchemaVersion"] = 1;
         legacy["Project"]!.AsObject().Remove("Items");
         legacy["Project"]!.AsObject().Remove("Budget");
+        legacy["Project"]!.AsObject().Remove("Reimbursements");
         File.WriteAllText(file, legacy.ToJsonString());
         var migrated = store.Load().Single();
         Check(migrated.Budget == 0 && migrated.Items.Length == 0 && migrated.Name == updated.Name, "Bestehendes v0.2-Projekt wird verlustfrei geladen");
         store.Save(migrated with { Revision = Guid.NewGuid() }, migrated.Revision);
-        Check(JsonNode.Parse(File.ReadAllText(file))!["SchemaVersion"]!.GetValue<int>() == 2, "Migration schreibt neues Format erst beim Speichern");
+        Check(JsonNode.Parse(File.ReadAllText(file))!["SchemaVersion"]!.GetValue<int>() == 3, "Migration schreibt neues Format erst beim Speichern");
         Check(!Directory.EnumerateFiles(folder, "*.tmp").Any(), "Keine temporären Dateien nach erfolgreichem Speichern");
     }
 
@@ -148,10 +152,12 @@ internal static class Program
         if (screenshot is not null) Capture(window, screenshot);
         model.ShowAboutCommand.Execute(null);
         Pump(window);
-        Check(model.ShowAbout && model.PageDescription.Contains("0.3.0"), "App-Information");
+        Check(model.ShowAbout && model.PageDescription.Contains("0.4.0"), "App-Information");
         model.ShowHomeCommand.Execute(null);
         model.OpenProjectCommand.Execute(model.Projects.Single());
         TestCostWindow(window, screenshot);
+        TestRepaymentWindow(window, screenshot);
+        TestMatchWindow(window, screenshot);
         window.Width = window.MinWidth;
         window.Height = window.MinHeight;
         Pump(window);
@@ -225,6 +231,7 @@ internal static class Program
         {
             try
             {
+                TestNumericFocus(dialog);
                 ((TextBox)dialog.FindName("MaterialInput")).Text = "Materiallieferung";
                 ((TextBox)dialog.FindName("QuantityInput")).Text = "10";
                 ((TextBox)dialog.FindName("PriceInput")).Text = "12,50";
@@ -258,6 +265,9 @@ internal static class Program
         public CostItem? Edit(CostItem? existing) => Next;
         public bool AllowRemoval { get; set; }
         public bool ConfirmRemoval(CostItem existing) => AllowRemoval;
+        public MatchDecision Decision { get; set; } = new();
+        public int MatchQuestions { get; private set; }
+        public MatchDecision ChooseSimilar(CostItem incoming, IReadOnlyList<CostItem> candidates) { MatchQuestions++; return Decision; }
     }
 
     private static void Click(Window window, string name)

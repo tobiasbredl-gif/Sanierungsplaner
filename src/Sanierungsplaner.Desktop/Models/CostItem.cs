@@ -18,6 +18,11 @@ public sealed record Payments(decimal Lea = 0, decimal Wolfgang = 0, decimal Jen
 public sealed record CostItem(Guid Id, string Material, string Floor, string Room,
     decimal Quantity, string Unit, decimal UnitPrice, string Status, Payments Payments)
 {
+    public DateOnly? Date { get; init; }
+    public DateTimeOffset? RecordedAt { get; init; }
+    [JsonIgnore] public string DateLabel => Date?.ToString("dd.MM.yyyy") ?? "Datum unbekannt (Altbestand)";
+    [JsonIgnore] public string PurchaseLabel => $"{DateLabel} · {Quantity.ToString("0.###", CultureInfo.GetCultureInfo("de-DE"))} {Unit} × {Money(UnitPrice)} · {Status}";
+    [JsonIgnore] public string PaymentsLabel => $"Lea: {Money(Payments.Lea)} · Wolfgang: {Money(Payments.Wolfgang)} · Jennifer: {Money(Payments.Jennifer)} · Tobias: {Money(Payments.Tobias)}";
     public static IReadOnlyList<string> Statuses { get; } = Array.AsReadOnly(new[] { "Geplant", "Gekauft", "Verbaut" });
     [JsonIgnore] public decimal Total => decimal.Round(Quantity * UnitPrice, 2, MidpointRounding.AwayFromZero);
     [JsonIgnore] public decimal Outstanding => Total - Payments.Total;

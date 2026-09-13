@@ -1,30 +1,57 @@
 <UserControl x:Class="Sanierungsplaner.Desktop.Views.CostPlanView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:behaviors="clr-namespace:Sanierungsplaner.Desktop.Behaviors">
     <UserControl.Resources>
         <Style x:Key="Panel" TargetType="Border"><Setter Property="Background" Value="White" /><Setter Property="BorderBrush" Value="#DDE4DC" /><Setter Property="BorderThickness" Value="1" /><Setter Property="CornerRadius" Value="10" /><Setter Property="Padding" Value="20" /><Setter Property="Margin" Value="0,0,0,16" /></Style>
         <Style TargetType="TextBox"><Setter Property="Padding" Value="10,8" /><Setter Property="FontSize" Value="14" /></Style>
+        <Style x:Key="OptionalMessage" TargetType="TextBlock"><Setter Property="Margin" Value="0,0,0,12" /><Style.Triggers><Trigger Property="Text" Value=""><Setter Property="Visibility" Value="Collapsed" /></Trigger></Style.Triggers></Style>
     </UserControl.Resources>
     <StackPanel>
+        <TextBlock Text="{Binding Error}" Style="{StaticResource OptionalMessage}" Foreground="#852D14" AutomationProperties.LiveSetting="Assertive" />
+        <TextBlock Text="{Binding Notice}" Style="{StaticResource OptionalMessage}" Foreground="#176B56" AutomationProperties.LiveSetting="Polite" />
         <Border Style="{StaticResource Panel}">
             <StackPanel>
                 <TextBlock Text="Wer hat was bezahlt?" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,16" />
                 <ItemsControl ItemsSource="{Binding People}">
                     <ItemsControl.ItemTemplate><DataTemplate>
-                        <Border BorderBrush="#E1E7DF" BorderThickness="0,0,0,1" Padding="0,12">
-                            <Grid><Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                                <TextBlock Text="{Binding Person}" FontSize="16" /><TextBlock Grid.Column="1" Text="{Binding AmountLabel}" FontSize="16" FontWeight="SemiBold" />
+                        <Border BorderBrush="#E1E7DF" BorderThickness="0,0,0,1" Padding="0,8">
+                            <Grid><Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition Width="112" /><ColumnDefinition Width="114" /></Grid.ColumnDefinitions>
+                                <StackPanel Margin="0,0,12,0">
+                                    <TextBlock Text="{Binding Person}" FontSize="16" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding DetailLabel}" Foreground="#596B62" FontSize="12" Margin="0,6,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding AmountCaption}" FontSize="11" HorizontalAlignment="Right" />
+                                    <TextBlock Text="{Binding AmountLabel}" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Right" />
+                                </StackPanel>
+                                    <Button Grid.Column="2" Content="Zurückzahlen" Command="{Binding DataContext.ReimburseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Padding="8,4" MinHeight="30" FontSize="12" Margin="12,0,0,0" VerticalAlignment="Center">
+                                        <Button.Style><Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}"><Style.Triggers><DataTrigger Binding="{Binding Person}" Value="Tobias"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers></Style></Button.Style>
+                                    </Button>
                             </Grid>
                         </Border>
                     </DataTemplate></ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <TextBlock Text="Summe der eingetragenen Zahlungen pro Person. Geplante Positionen zählen noch nicht als bezahlt." FontSize="12" Foreground="#596B62" Margin="0,16,0,0" />
+                <TextBlock Text="Rückzahlungen senken den offenen Betrag und werden Tobias zugerechnet. Die ursprünglichen Einkäufe und die Gesamtkosten bleiben erhalten." FontSize="12" Foreground="#596B62" Margin="0,16,0,0" />
             </StackPanel>
         </Border>
+        <Expander Header="Rückzahlungsprotokoll" Margin="0,0,0,16">
+            <StackPanel Margin="0,12,0,0">
+                <TextBlock Text="{Binding LedgerHint}" Foreground="#596B62" Margin="0,0,0,12" />
+                <ItemsControl ItemsSource="{Binding History}"><ItemsControl.ItemTemplate><DataTemplate>
+                    <Border Style="{StaticResource Panel}"><StackPanel>
+                        <TextBlock Text="{Binding Description}" FontSize="16" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding RecordedLabel}" Foreground="#596B62" FontSize="12" Margin="0,6,0,0" />
+                        <TextBlock Text="{Binding Note}" Margin="0,8,0,0" />
+                        <Button Content="Stornieren" Command="{Binding DataContext.ReverseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" HorizontalAlignment="Left" Margin="0,12,0,0" />
+                    </StackPanel></Border>
+                </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+            </StackPanel>
+        </Expander>
         <Expander Header="Budget und Gesamtkosten" IsExpanded="False" Margin="0,0,0,16">
         <Border Style="{StaticResource Panel}">
             <StackPanel>
                 <TextBlock Text="Dein Budget" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,12" />
-                <TextBox Text="{Binding BudgetText, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Projektbudget in Euro" />
+                <TextBox Text="{Binding BudgetText, UpdateSourceTrigger=PropertyChanged}" behaviors:SelectAllOnFocus.Enabled="True" AutomationProperties.Name="Projektbudget in Euro" />
                 <TextBlock Text="Euro · Dezimalkomma verwenden, keine Tausendertrennzeichen." FontSize="12" Foreground="#596B62" Margin="0,8,0,8" />
                 <TextBlock Text="{Binding BudgetError}" Foreground="#852D14" />
                 <UniformGrid Columns="2" Margin="0,16,0,0">
@@ -39,17 +66,28 @@
         </Border>
         </Expander>
         <TextBlock Text="Alle Kostenpositionen" FontSize="22" FontWeight="SemiBold" Margin="0,8,0,12" />
-        <Button Content="+ Position hinzufügen" Command="{Binding AddCommand}" HorizontalAlignment="Left" Margin="0,0,0,16" />
-        <ItemsControl ItemsSource="{Binding Items}">
+        <Button Content="+ Einkauf / Position erfassen" Command="{Binding AddCommand}" HorizontalAlignment="Left" Margin="0,0,0,12" />
+        <TextBlock Text="Gleicher Name, gleiche Einheit, gleicher Raum und gleiche Etage: neue Einkäufe werden automatisch zusammengefasst. Jeder Eintrag behält sein Datum und seine Zahlungen." Foreground="#596B62" FontSize="12" Margin="0,0,0,16" />
+        <ItemsControl ItemsSource="{Binding Groups}">
             <ItemsControl.ItemTemplate><DataTemplate>
                 <Border Style="{StaticResource Panel}"><StackPanel>
                     <TextBlock Text="{Binding Material}" FontSize="19" FontWeight="SemiBold" />
                     <TextBlock Text="{Binding DetailLabel}" Foreground="#596B62" Margin="0,8,0,12" />
+                    <TextBlock Text="{Binding QuantityLabel}" FontSize="18" Margin="0,0,0,12" />
                     <WrapPanel><TextBlock Text="Kosten: " /><TextBlock Text="{Binding TotalLabel}" FontWeight="SemiBold" Margin="0,0,24,0" /><TextBlock Text="Bezahlt: " /><TextBlock Text="{Binding PaidLabel}" FontWeight="SemiBold" /></WrapPanel>
-                    <WrapPanel>
-                        <Button Content="Position bearbeiten" Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Margin="0,16,12,0" />
-                        <Button Content="Entfernen" Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Background="#E3EBDE" Foreground="#153E33" Margin="0,16,0,0" />
-                    </WrapPanel>
+                    <Expander Header="Einzelne Einträge mit Datum" Margin="0,16,0,0">
+                        <ItemsControl ItemsSource="{Binding Entries}"><ItemsControl.ItemTemplate><DataTemplate>
+                            <Border BorderBrush="#DDE4DC" BorderThickness="0,0,0,1" Padding="0,16"><StackPanel>
+                                <TextBlock Text="{Binding PurchaseLabel}" FontWeight="SemiBold" />
+                                <WrapPanel Margin="0,8,0,8"><TextBlock Text="Kosten: " /><TextBlock Text="{Binding TotalLabel}" Margin="0,0,16,0" /><TextBlock Text="Bezahlt: " /><TextBlock Text="{Binding PaidLabel}" /></WrapPanel>
+                                <TextBlock Text="{Binding PaymentsLabel}" Foreground="#596B62" FontSize="12" />
+                                <WrapPanel>
+                                    <Button Content="Eintrag bearbeiten" Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Margin="0,12,12,0" />
+                                    <Button Content="Entfernen" Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Background="#E3EBDE" Foreground="#153E33" Margin="0,12,0,0" />
+                                </WrapPanel>
+                            </StackPanel></Border>
+                        </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+                    </Expander>
                 </StackPanel></Border>
             </DataTemplate></ItemsControl.ItemTemplate>
         </ItemsControl>

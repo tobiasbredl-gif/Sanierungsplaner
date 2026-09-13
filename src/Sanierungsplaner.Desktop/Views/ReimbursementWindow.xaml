@@ -1,0 +1,25 @@
+<Window x:Class="Sanierungsplaner.Desktop.Views.ReimbursementWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:behaviors="clr-namespace:Sanierungsplaner.Desktop.Behaviors"
+        Title="Rückzahlung erfassen" Width="590" Height="630" MinWidth="500" MinHeight="520" WindowStartupLocation="CenterOwner"
+        Style="{StaticResource {x:Type Window}}" Language="de-DE">
+    <Grid Background="#F4F6F3"><DockPanel Margin="24">
+        <WrapPanel DockPanel.Dock="Bottom" Margin="0,16,0,0">
+            <Button x:Name="ApplyButton" Content="Rückzahlung übernehmen" Click="Apply" Margin="0,0,12,8" />
+            <Button Content="Abbrechen" IsCancel="True" Margin="0,0,0,8" />
+        </WrapPanel>
+        <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
+            <TextBlock Text="{Binding Heading}" FontSize="25" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding BalanceLabel}" FontSize="18" Margin="0,12,0,16" />
+            <TextBlock Text="Erfasse hier Geld, das Tobias bereits zurückgezahlt hat. Der Betrag wird auf Tobias übertragen. Es wird keine Überweisung ausgelöst." Foreground="#596B62" Margin="0,0,0,20" />
+            <TextBlock Text="Zurückgezahlter Betrag (€)" />
+            <TextBox x:Name="AmountInput" Text="{Binding AmountText, UpdateSourceTrigger=PropertyChanged}" behaviors:SelectAllOnFocus.Enabled="True" Padding="10,8" Margin="0,6,0,16" AutomationProperties.Name="Rückzahlungsbetrag" />
+            <TextBlock Text="Datum der Rückzahlung" />
+            <DatePicker x:Name="DateInput" SelectedDate="{Binding Date}" SelectedDateFormat="Short" Margin="0,6,0,16" AutomationProperties.Name="Rückzahlungsdatum" />
+            <TextBlock Text="Notiz (optional)" />
+            <TextBox Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}" MaxLength="500" AcceptsReturn="True" TextWrapping="Wrap" Height="75" VerticalScrollBarVisibility="Auto" Margin="0,6,0,16" AutomationProperties.Name="Notiz zur Rückzahlung" />
+            <TextBlock Text="{Binding Error}" Foreground="#852D14" AutomationProperties.LiveSetting="Assertive" />
+            <TextBlock Text="Zum dauerhaften Sichern anschließend das Projekt speichern." FontSize="12" Margin="0,16,0,0" />
+        </StackPanel></ScrollViewer>
+    </DockPanel></Grid>
+</Window>
