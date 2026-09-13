@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Sanierungsplaner.Desktop/Sanierungsplaner.Desktop.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Sanierungsplaner.SmokeTests/Sanierungsplaner.SmokeTests.csproj" />
+  </Folder>
+</Solution>

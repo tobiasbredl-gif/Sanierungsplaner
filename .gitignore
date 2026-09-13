@@ -1,0 +1,13 @@
+**/bin/
+**/obj/
+.vs/
+.idea/
+*.user
+*.suo
+artifacts/
+TestResults/
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
