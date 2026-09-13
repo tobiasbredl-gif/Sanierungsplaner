@@ -81,7 +81,28 @@ public partial class MainActivity
   catch(Exception ex){syncMessage="Abgleich nicht abgeschlossen: "+ex.Message;if(!automatic){Render();await Message("WLAN-Abgleich",syncMessage);}}
   finally{syncBusy=false;syncGate.Release();}
  }
- async Task<bool> ConfirmOwner()
+ async Task DeleteForEveryone(RenovationProject project)
+ {
+  if(!IsTobias||binding==null||syncBusy)return;
+  formOpen=true;
+  try
+  {
+   if(!await Confirm("Projekt für alle löschen?",$"„{project.Name}“ wird am PC und beim nächsten Abgleich auf allen Handys gelöscht, einschließlich Kosten und Zahlungen. Eine Sicherung bleibt erhalten. Der PC muss erreichbar sein."))return;
+   if(!await ConfirmOwner("Projektlöschung als Tobias bestätigen"))return;
+   await syncGate.WaitAsync();syncBusy=true;
+   try
+   {
+    using var client=new SyncClient(binding);
+    await client.Delete(project);
+    new JsonProjectStore(model.StoragePath).Delete(project.Id,null,true);
+    model.ReloadCommand.Execute(null);Render();
+    await Message("Projekt gelöscht","Die Löschung wurde am PC gespeichert. Andere Handys übernehmen sie beim nächsten Abgleich.");
+   }
+   finally{syncBusy=false;syncGate.Release();}
+  }
+  finally{formOpen=false;}
+ }
+ async Task<bool> ConfirmOwner(string title="Erstattung als Tobias bestätigen")
  {
   if(!IsTobias){await Message("Nur Tobias","Dieses Handy ist nicht als Tobias freigegeben.");return false;}
   var keyguard=(KeyguardManager)GetSystemService(KeyguardService)!;
@@ -93,13 +114,13 @@ public partial class MainActivity
    if(OperatingSystem.IsAndroidVersionAtLeast(30))
    {
     biometricCancellation=new();
-    var p=new BiometricPrompt.Builder(this).SetTitle("Erstattung als Tobias bestätigen")!.SetSubtitle("Fingerabdruck oder Geräte-PIN")!.SetAllowedAuthenticators((int)(BiometricManagerAuthenticators.BiometricStrong|BiometricManagerAuthenticators.DeviceCredential))!.Build();
+    var p=new BiometricPrompt.Builder(this).SetTitle(title)!.SetSubtitle("Fingerabdruck oder Geräte-PIN")!.SetAllowedAuthenticators((int)(BiometricManagerAuthenticators.BiometricStrong|BiometricManagerAuthenticators.DeviceCredential))!.Build();
     p.Authenticate(biometricCancellation,MainExecutor!,new AuthResult(ok=>credentialResult?.TrySetResult(ok)));
    }
    else
    {
 #pragma warning disable CS0618, CA1422
-    var intent=keyguard.CreateConfirmDeviceCredentialIntent("Erstattung bestätigen","Gerätesperre für Tobias bestätigen");
+    var intent=keyguard.CreateConfirmDeviceCredentialIntent(title,"Gerätesperre für Tobias bestätigen");
 #pragma warning restore CS0618, CA1422
     if(intent==null)return false;StartActivityForResult(intent,712);
    }

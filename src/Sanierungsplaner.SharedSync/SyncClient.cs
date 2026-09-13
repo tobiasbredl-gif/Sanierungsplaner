@@ -42,7 +42,10 @@ public sealed class SyncClient : IDisposable
   using var response=await http.GetAsync("projects");await Check(response);
   var remote=(await response.Content.ReadFromJsonAsync<RenovationProject[]>())??throw new InvalidDataException("Leere Projektliste.");
   foreach(var r in remote)r.Validate();
-  var remoteById=remote.ToDictionary(p=>p.Id);var locals=local.Load();
+  using var deletedResponse=await http.GetAsync("deleted-projects");await Check(deletedResponse);
+  var deleted=await deletedResponse.Content.ReadFromJsonAsync<Guid[]>()??throw new InvalidDataException("Leere Löschliste.");
+  foreach(var id in deleted)local.Delete(id,null,true);
+  var remoteById=remote.Where(p=>!deleted.Contains(p.Id)).ToDictionary(p=>p.Id);var locals=local.Load();
   foreach(var item in locals)
   {
    remoteById.Remove(item.Id,out var pc);var previous=baseline.SingleOrDefault(b=>b.ProjectId==item.Id);
@@ -78,6 +81,14 @@ public sealed class SyncClient : IDisposable
   if(response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)throw new UnauthorizedAccessException("Gerät noch nicht freigegeben oder Zugriff widerrufen. Bitte am PC prüfen.");
   if(response.StatusCode==HttpStatusCode.Conflict)throw new IOException("Projekt inzwischen geändert. Bitte Abgleich erneut starten; keine Daten wurden überschrieben.");
   if(!response.IsSuccessStatusCode){var text=await response.Content.ReadAsStringAsync();throw new InvalidDataException("Abgleich abgewiesen: "+(text.Length>500?text[..500]:text));}
+ }
+ public async Task Delete(RenovationProject project)
+ {
+  if((await Identity()).Role!="Tobias")throw new UnauthorizedAccessException("Nur Tobias darf Projekte löschen.");
+  using var projects=await http.GetAsync("projects");await Check(projects);
+  var current=(await projects.Content.ReadFromJsonAsync<RenovationProject[]>())?.SingleOrDefault(p=>p.Id==project.Id);
+  if(current!=null&&!Equivalent(current,project))throw new IOException("Die Projektstände unterscheiden sich. Bitte zuerst abgleichen und die Löschung erneut prüfen.");
+  using var response=await http.PostAsJsonAsync("delete-project",new DeleteProject(project.Id,current?.Revision));await Check(response);
  }
  public void Dispose()=>http.Dispose();
 }

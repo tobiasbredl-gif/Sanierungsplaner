@@ -39,3 +39,13 @@ Der PC-Dienst muss laufen und erreichbar sein. Kein Internetserver, keine Portwe
 - Die Android-Gerätesperre bestätigt jede mobile Tobias-Erstattung bzw. deren Storno. Die PC-App vertraut dem angemeldeten Windows-Benutzer. Personen mit dessen vollständigem Dateizugriff oder einem vollständig kompromittierten Handy liegen außerhalb dieser App-Rollentrennung.
 
 Die Tests verwenden ausschließlich isolierte Testdaten. Den produktiven PC-Dienst und die Firewallfreigabe startet der Benutzer selbst.
+
+## Projekte für alle löschen · ab Version 0.11.0
+
+In der Projektübersicht steht bei freigegebener Tobias-Rolle **Projekt für alle löschen**. Nach der Rückfrage ist zusätzlich die Android-Gerätesperre zu bestätigen. Der PC muss erreichbar sein. Unterschiedliche Projektstände zunächst abgleichen; ein inzwischen geändertes Projekt wird nicht ungeprüft gelöscht.
+
+Die Löschung wird am PC gespeichert. Alle anderen Handys entfernen das Projekt beim nächsten Abgleich, auch wenn sie vorher offline waren. Es verschwindet mitsamt Kosten, Zahlungen und Planung aus den aktiven Projekten. Die bisherige Projektdatei bleibt als Sicherung unter `Projects/Deleted` erhalten. Eine dauerhafte Löschmarkierung verhindert, dass alte Kopien wieder hochgeladen werden. Das ist keine vollständige Vernichtung aller lokalen Sicherungskopien.
+
+Die PC-App bietet denselben Button mit Rückfrage. Wie bei den übrigen Tobias-Verwaltungsfunktionen gilt dort der angemeldete Windows-Benutzer als vertrauenswürdig. Andere mobile Rollen erhalten keinen Löschbutton; der Server prüft die Rolle auch bei direkt gesendeten Löschanfragen.
+
+PC und alle Handys auf **0.11.0** aktualisieren. Ältere Android-Versionen übernehmen Löschungen noch nicht automatisch. Die neue Android-Version benötigt den neuen PC-Dienst. Vorhandene Rollen und Projekte bleiben beim Update erhalten. Falls die Windows-Firewall noch den alten Programmordner freigibt, im neuen Programm erneut **Windows-Zugriff im privaten Heimnetz erlauben** verwenden.

@@ -159,3 +159,7 @@ Bei Lea, Wolfgang und Jennifer öffnet **An Tobias zahlen** direkt die Erfassung
 Die native Android-App übernimmt die Funktionen der Windows-Version 0.10.0 mit derselben Berechnungs- und Speicherlogik. Die erste APK arbeitet lokal auf Tobias' Testhandy. Installation, Funktionsvergleich und Bauanleitung stehen in [docs/android.md](docs/android.md). Die PC-Kopplung weist dem Handy eine Rolle zu. Nur Tobias kann mobil Erstattungen auslösen und stornieren, jeweils nach Bestätigung der Android-Gerätesperre. Siehe [Kopplungsanleitung](docs/secure-sync.md).
 
 Oben in Kosten & Zahlungen zeigen Windows und Android die aktuellen Netto-Gesamtausgaben sowie separat geplante Ausgaben. Der ursprünglich bezahlte Betrag bleibt darunter sichtbar. Geplante Positionen zählen erst bei tatsächlichen Zahlungen zu den aktuellen Ausgaben.
+
+## Version 0.11.0: Projekte für alle löschen
+
+Tobias kann Projekte in der Übersicht nach Bestätigung und Android-Gerätesperre für alle löschen. Der PC muss erreichbar sein. Andere Geräte übernehmen die Löschung beim nächsten Abgleich. Alte Kopien können das Projekt nicht wieder hochladen; eine Sicherung bleibt erhalten. PC und alle Handys müssen auf 0.11.0 aktualisiert werden. Details: [Gerätefreigabe und Löschen](docs/secure-sync.md).

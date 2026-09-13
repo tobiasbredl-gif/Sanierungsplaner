@@ -49,3 +49,4 @@ public static class SyncRules
   if(current!=null && (!proposed.Reimbursements.Take(current.Reimbursements.Length).SequenceEqual(current.Reimbursements)||!proposed.Credits.Take(current.Credits.Length).SequenceEqual(current.Credits)||!proposed.IncomingRepayments.Take(current.IncomingRepayments.Length).SequenceEqual(current.IncomingRepayments)))throw new InvalidDataException("Gespeicherte Protokolle dürfen nur durch weitere Einträge ergänzt werden.");
  }
 }
+public sealed record DeleteProject(Guid Id, Guid? ExpectedRevision);

@@ -1,10 +1,10 @@
-# Android-App · Testversion 0.10.0
+# Android-App · Testversion 0.11.0
 
 Diese native Android-App ist für Tobias' ersten Handytest vorgesehen. Sie benötigt Android 8.0 oder neuer und einen 64-Bit-Prozessor (ARM64; zusätzlich x64 für Emulatoren).
 
 ## Installation auf dem Handy
 
-1. `Sanierungsplaner-Android-v0.10.0.apk` auf das Handy übertragen, z. B. per USB in den Download-Ordner.
+1. `Sanierungsplaner-Android-v0.11.0.apk` auf das Handy übertragen, z. B. per USB in den Download-Ordner.
 2. Die APK auf dem Handy öffnen. Falls Android fragt, die Installation aus dieser Quelle für die verwendete Dateien-App erlauben.
 3. Installieren und **Sanierungsplaner** öffnen.
 4. Unter **PC koppeln / WLAN-Abgleich** die Gerätefreigabe einrichten; siehe [Kopplungsanleitung](secure-sync.md). Ohne Freigabe sind mobile Erstattungen gesperrt.
@@ -51,3 +51,5 @@ dotnet run --project tests/Sanierungsplaner.AndroidTests -c Release
 APK: `src/Sanierungsplaner.Android/bin/Release/net10.0-android/de.sanierungsplaner.android-Signed.apk`. Die lokale Testsignatur muss für weitere Updates aufbewahrt werden; produktive Signierschlüssel gehören nicht ins Repository. Die separate Android-Lösung lässt sich über `Sanierungsplaner.Android.slnx` bauen; die bestehende Windows-Lösung bleibt unabhängig vom Android-SDK.
 
 Projekte liegen im privaten App-Verzeichnis `FilesDir/Projects` im Dateiformat 6. Nach bewusster Kopplung werden gespeicherte Projekte mit dem freigegebenen PC abgeglichen. Der Android-Test der gemeinsamen Logik verwendet ausschließlich temporäre Dateien.
+
+Ab 0.11.0 kann Tobias Projekte für alle löschen. PC und alle Handys aktualisieren; Löschungen werden beim nächsten Abgleich übernommen. Siehe secure-sync.md.

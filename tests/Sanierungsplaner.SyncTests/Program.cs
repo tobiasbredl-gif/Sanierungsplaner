@@ -40,7 +40,22 @@ try
  var ownerInvite=SyncClient.Decode(server.Invite("Tobias"));var ownerBinding=new ClientBinding(ownerInvite.Url,ownerInvite.Fingerprint,SyncRules.NewSecret(),null,null);using var ownerClient=new SyncClient(ownerBinding);await ownerClient.Claim(ownerInvite.Secret,"Tobias-Test");server.Registry.Approve(server.Registry.Pending.Single().Id);
  var current=phone.Load().Single();phone.Save(current with{Revision=Guid.NewGuid(),Reimbursements=[new Reimbursement(Guid.NewGuid(),"Lea",100,DateOnly.FromDateTime(now.Date),now,"")]},current.Revision);
  await ownerClient.Synchronize(phone,Path.Combine(root,"State"),(_,_)=>Task.FromResult(ConflictChoice.Cancel));Check(pc.Load().Single().Reimbursements.Length==1,"Tobias reimbursement accepted");
+ var deletionCandidate=phone.Load().Single();
+ using(var deniedDelete=await raw.PostAsJsonAsync("delete-project",new DeleteProject(deletionCandidate.Id,deletionCandidate.Revision)))Check(deniedDelete.StatusCode==HttpStatusCode.Unauthorized,"Non-Tobias crafted delete denied");
+ Check(pc.Load().Count==1,"Denied deletion preserves project");
+ await RejectAsync(()=>client.Delete(deletionCandidate));
+ var otherPhone=new JsonProjectStore(Path.Combine(root,"OtherPhone"));otherPhone.Save(deletionCandidate,null);
+ await ownerClient.Delete(deletionCandidate);
+ Check(pc.Load().Count==0&&pc.DeletedIds().Contains(deletionCandidate.Id),"Owner deletion persists tombstone");
+ Check(File.ReadAllText(Path.Combine(pc.FolderPath,"Deleted",deletionCandidate.Id+".json")).Contains("Reimbursements"),"Deletion retains journal backup");
+ Reject(()=>pc.Save(deletionCandidate,null));
+ await client.Synchronize(otherPhone,Path.Combine(root,"OtherState"),(_,_)=>Task.FromResult(ConflictChoice.Cancel));
+ Check(otherPhone.Load().Count==0,"Deletion propagates to other role instead of resurrecting old copy");
+ await ownerClient.Delete(deletionCandidate);
+ var revised=project with {Id=Guid.NewGuid(),Revision=Guid.NewGuid()};pc.Save(revised,null);
+ Reject(()=>pc.Delete(revised.Id,Guid.NewGuid()));Check(pc.Load().Count==1,"Stale revision cannot delete");
+ pc.Delete(revised.Id,revised.Revision);Check(pc.Load().Count==0,"Desktop deletion");
  var device=(await ownerClient.Identity()).Id;server.Registry.Revoke(device);await RejectAsync(()=>ownerClient.Identity());await RejectAsync(()=>ownerClient.Synchronize(phone,Path.Combine(root,"State"),(_,_)=>Task.FromResult(ConflictChoice.Phone)));
- Console.WriteLine("PASS: one-use/expired pairing, pending approval, assigned roles, TLS pin mismatch, unauthenticated denial, forged reimbursement denial, authorized sync, conflicts, owner operation and revocation.");
+ Console.WriteLine("PASS: one-use/expired pairing, pending approval, assigned roles, TLS pin mismatch, unauthenticated denial, forged reimbursement denial, authorized sync, conflicts, owner operation, role-protected deletion, retained backup, deletion propagation, resurrection prevention and revocation.");
 }
 finally{var keyPath=Path.Combine(root,"Server","server-key-name.txt");if(File.Exists(keyPath)){using var key=CngKey.Open(File.ReadAllText(keyPath));key.Delete();}if(Directory.Exists(root))Directory.Delete(root,true);}

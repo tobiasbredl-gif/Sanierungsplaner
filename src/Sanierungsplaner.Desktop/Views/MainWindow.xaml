@@ -38,7 +38,7 @@
                 </StackPanel>
                 <StackPanel DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
                     <TextBlock Text="WINDOWS DESKTOP" Foreground="#BDD0C8" FontSize="11" />
-                    <TextBlock Text="Kostenübersicht · 0.10.0" Foreground="White" Margin="0,6,0,0" />
+                    <TextBlock Text="Kostenübersicht · 0.11.0" Foreground="White" Margin="0,6,0,0" />
                 </StackPanel>
             </DockPanel>
         </Border>
@@ -81,6 +81,7 @@
                                             <TextBlock Text="{Binding Name}" FontSize="21" FontWeight="SemiBold" />
                                             <TextBlock Text="{Binding AddressLabel}" Foreground="#596B62" Margin="0,8,0,12" />
                                             <TextBlock Text="{Binding UpdatedLabel}" Foreground="#596B62" FontSize="12" Margin="0,0,0,16" />
+                                            <Button Content="Projekt für alle löschen" Click="DeleteProject" Tag="{Binding}" HorizontalAlignment="Left" />
                                             <Button Content="Projekt öffnen" HorizontalAlignment="Left" Command="{Binding DataContext.OpenProjectCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" />
                                         </StackPanel>
                                     </Border>

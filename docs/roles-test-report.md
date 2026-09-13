@@ -22,3 +22,9 @@ dotnet run --project tests/Sanierungsplaner.SmokeTests -c Release -- C:/Temp/San
 ```
 
 Die HTTPS-Tests benötigen Windows und eine aktive private IPv4-Netzwerkschnittstelle. Sie verwenden Port 58443 und entfernen ihren isolierten Windows-CNG-Testschlüssel anschließend. Vorher einen laufenden Sanierungsplaner-Testdienst beenden.
+
+## Ergänzung 0.11.0 – Projektlöschung
+
+Automatisierter HTTPS-Test bestanden: Lea darf weder über den Client noch über eine manipulierte Anfrage löschen; Tobias darf löschen; die Sicherung enthält das Journal. Ein zweiter Handy-Datenbestand übernimmt die Löschung statt seine alte Kopie hochzuladen. Wiederholte Löschungen sind unschädlich. Speichern einer gelöschten Kennung wird abgewiesen, eine veraltete Revision verhindert eine neue Löschung. Desktop-Löschung und bestehende Windows-/Android-Logiktests bestanden.
+
+Die neue Löschoberfläche wurde gebaut; ein praktischer Löschdurchlauf auf einem physischen Handy steht aus.

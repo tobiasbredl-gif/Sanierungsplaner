@@ -46,6 +46,17 @@ public sealed class LanSyncServer : IAsyncDisposable
    next.MapPost("/pair",async(HttpContext c)=>{var request=await c.Request.ReadFromJsonAsync<PairRequest>()??throw new InvalidDataException("Leere Kopplungsanfrage.");registry.Claim(request);return Results.Ok(new{Pending=true});});
    next.MapGet("/identity",(HttpContext c)=>registry.Authorized(Token(c),d=>Results.Json(new DeviceIdentity(d.Id,d.Name,d.Role))));
    next.MapGet("/projects",(HttpContext c)=>registry.Authorized(Token(c),d=>Results.Json(store.Load())));
+   next.MapGet("/deleted-projects",(HttpContext c)=>registry.Authorized(Token(c),d=>Results.Json(((JsonProjectStore)store).DeletedIds())));
+   next.MapPost("/delete-project",async(HttpContext c)=>
+   {
+    var deletion=await c.Request.ReadFromJsonAsync<DeleteProject>()??throw new InvalidDataException("Leere Löschanfrage.");
+    return registry.Authorized(Token(c),d=>
+    {
+     if(d.Role!="Tobias")throw new UnauthorizedAccessException();
+     ((JsonProjectStore)store).Delete(deletion.Id,deletion.ExpectedRevision);
+     return Results.Ok();
+    });
+   });
    next.MapPost("/projects",async(HttpContext c)=>
    {
     var upload=await c.Request.ReadFromJsonAsync<UploadProject>()??throw new InvalidDataException("Leeres Projekt.");
