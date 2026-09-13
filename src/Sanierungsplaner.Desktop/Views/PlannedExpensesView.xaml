@@ -1,0 +1,25 @@
+<UserControl x:Class="Sanierungsplaner.Desktop.Views.PlannedExpensesView"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+ <StackPanel>
+  <TextBlock Text="Zukünftige / geplante Ausgaben" FontSize="24" FontWeight="SemiBold" Margin="0,0,0,12" />
+  <TextBlock Text="Hier sammelst du zukünftige Anschaffungen. Sie zählen zur Kalkulation, aber noch nicht als bezahlt. Beim Kauf den vorhandenen Eintrag bearbeiten und auf Gekauft setzen." TextWrapping="Wrap" Margin="0,0,0,16" />
+  <Button Content="+ Geplante Ausgabe erfassen" Command="{Binding AddPlannedCommand}" HorizontalAlignment="Left" Margin="0,0,0,16" />
+  <TextBlock Text="{Binding Error}" Foreground="#852D14" TextWrapping="Wrap" />
+  <TextBlock Text="{Binding Notice}" Foreground="#176B56" TextWrapping="Wrap" />
+  <TextBlock Text="{Binding PlannedHint}" Margin="0,12,0,8" />
+  <TextBlock Text="{Binding PlannedTotalLabel}" FontSize="24" FontWeight="SemiBold" Margin="0,0,0,16" />
+  <ItemsControl ItemsSource="{Binding PlannedItems}"><ItemsControl.ItemTemplate><DataTemplate>
+   <Border Background="White" BorderBrush="#DDE4DC" BorderThickness="1" CornerRadius="10" Padding="20" Margin="0,0,0,16"><StackPanel>
+    <TextBlock Text="{Binding Material}" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap" />
+    <TextBlock Text="{Binding PurchaseLabel}" Margin="0,8,0,8" TextWrapping="Wrap" />
+    <TextBlock Text="{Binding DetailLabel}" TextWrapping="Wrap" />
+    <TextBlock Text="{Binding TotalLabel}" FontSize="22" Margin="0,8,0,8" />
+    <WrapPanel>
+     <Button Content="Eintrag bearbeiten / kaufen" Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Margin="0,0,12,0" />
+     <Button Content="Entfernen" Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+    </WrapPanel>
+   </StackPanel></Border>
+  </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+  <TextBlock Text="Änderungen anschließend mit Projekt speichern sichern." TextWrapping="Wrap" />
+ </StackPanel>
+</UserControl>

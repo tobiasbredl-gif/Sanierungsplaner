@@ -1,6 +1,6 @@
 # Sanierungsplaner
 
-Native Windows-Desktop-App mit C# und WPF auf .NET 10. Version 0.6.0 bietet lokale Projekte, automatisch zusammengefasste Einkäufe mit Datum protokollierte Rückzahlungen von Tobias an Lea, Wolfgang und Jennifer sowie Verkaufsgutschriften und automatische Zahlungsbeträge.
+Native Windows-Desktop-App mit C# und WPF auf .NET 10. Version 0.7.0 bietet lokale Projekte, automatisch zusammengefasste Einkäufe mit Datum protokollierte Rückzahlungen von Tobias an Lea, Wolfgang und Jennifer sowie Verkaufsgutschriften und automatische Zahlungsbeträge.
 
 ## Ein Projekt anlegen
 
@@ -135,3 +135,9 @@ Weitere Entscheidungen stehen in [docs/architecture.md](docs/architecture.md). E
 ## Optionale Mehrwertsteuer
 
 Im Einkaufsformular ist **19 % MwSt. hinzufügen** standardmäßig ausgeschaltet. Bei Auswahl den Einzelpreis ohne Steuer eingeben. Menge × Einzelpreis wird auf Cent gerundet; darauf werden 19 % berechnet und ebenfalls auf Cent gerundet. Der Gesamtbetrag inklusive Steuer gilt für Budget, offene Beträge und Gesamtbetrag-Buttons. Beispiel: 100 € ergeben 119 €. Die Auswahl bleibt pro Einkauf gespeichert und im Verlauf sichtbar. Bestehende Einträge erhalten keinen automatischen Aufschlag. Das neue Dateiformat 5 verhindert, dass ältere App-Versionen die Steuer versehentlich ignorieren.
+
+## Geplante Ausgaben
+
+Neben Projektdaten und Kosten & Zahlungen gibt es den Reiter **Geplante Ausgaben**. Neue Einträge dort starten mit Geplant; ein zukünftiges Datum ist zulässig. Die Summe enthält die optionale MwSt. und fließt in die Kalkulation ein, jedoch nicht in bezahlte Ausgaben. Die allgemeine Kostenliste enthält weiterhin alle Positionen.
+
+Beim tatsächlichen Kauf den vorhandenen Eintrag bearbeiten, das Einkaufsdatum eintragen, auf Gekauft setzen und Zahlungen ergänzen. Er verschwindet dann aus der Planung, ohne eine zweite Position anzulegen. Änderungen anschließend mit Projekt speichern sichern. Der zusätzliche Einkaufsbutton steht oben direkt neben Verkauf / Gutschrift; der bisherige Button bleibt ebenfalls verfügbar.

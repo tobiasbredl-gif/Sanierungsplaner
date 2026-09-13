@@ -7,10 +7,10 @@ namespace Sanierungsplaner.Desktop.Views;
 public partial class CostItemWindow : Window
 {
     public CostItem? Result { get; private set; }
-    public CostItemWindow(CostItem? existing)
+    public CostItemWindow(CostItem? existing, bool planned = false)
     {
         InitializeComponent();
-        var draft = new CostItemDraft(existing);
+        var draft = new CostItemDraft(existing, planned);
         DataContext = draft;
         Closing += (_, e) =>
         {

@@ -7,7 +7,7 @@
         <Style x:Key="OptionalMessage" TargetType="TextBlock"><Setter Property="Margin" Value="0,0,0,12" /><Style.Triggers><Trigger Property="Text" Value=""><Setter Property="Visibility" Value="Collapsed" /></Trigger></Style.Triggers></Style>
     </UserControl.Resources>
     <StackPanel>
-        <Button Content="+ Verkauf / Gutschrift" Command="{Binding AddCreditCommand}" HorizontalAlignment="Left" Margin="0,0,0,16" />
+<WrapPanel><Button Content="+ Verkauf / Gutschrift" Command="{Binding AddCreditCommand}" Margin="0,0,12,16" /><Button Content="+ Einkauf / Position erfassen" Command="{Binding AddCommand}" Margin="0,0,0,16" /></WrapPanel>
         <TextBlock Text="{Binding Error}" Style="{StaticResource OptionalMessage}" Foreground="#852D14" AutomationProperties.LiveSetting="Assertive" />
         <TextBlock Text="{Binding Notice}" Style="{StaticResource OptionalMessage}" Foreground="#176B56" AutomationProperties.LiveSetting="Polite" />
         <Border Style="{StaticResource Panel}">

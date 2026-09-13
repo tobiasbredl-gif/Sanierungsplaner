@@ -4,7 +4,7 @@ namespace Sanierungsplaner.Desktop.Services;
 
 public interface ICostItemEditor
 {
-    CostItem? Edit(CostItem? existing);
+    CostItem? Edit(CostItem? existing, bool planned = false);
     bool ConfirmRemoval(CostItem existing);
     MatchDecision ChooseSimilar(CostItem incoming, IReadOnlyList<CostItem> candidates);
 }

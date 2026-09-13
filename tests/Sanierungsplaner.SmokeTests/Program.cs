@@ -155,7 +155,7 @@ internal static partial class Program
         if (screenshot is not null) Capture(window, screenshot);
         model.ShowAboutCommand.Execute(null);
         Pump(window);
-        Check(model.ShowAbout && model.PageDescription.Contains("0.6.0"), "App-Information");
+        Check(model.ShowAbout && model.PageDescription.Contains("0.7.0"), "App-Information");
         model.ShowHomeCommand.Execute(null);
         model.OpenProjectCommand.Execute(model.Projects.Single());
         TestCostWindow(window, screenshot);
@@ -267,7 +267,7 @@ internal static partial class Program
     private sealed class TestCostEditor : ICostItemEditor
     {
         public CostItem? Next { get; set; }
-        public CostItem? Edit(CostItem? existing) => Next;
+        public CostItem? Edit(CostItem? existing, bool planned = false) => Next;
         public bool AllowRemoval { get; set; }
         public bool ConfirmRemoval(CostItem existing) => AllowRemoval;
         public MatchDecision Decision { get; set; } = new();

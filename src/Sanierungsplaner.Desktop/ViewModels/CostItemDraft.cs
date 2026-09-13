@@ -22,7 +22,7 @@ public sealed class CostItemDraft : INotifyPropertyChanged
         set { _addVat = value; _error = ""; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(string.Empty)); }
     }
     public DateTime? Date { get; set; }
-    public CostItemDraft(CostItem? item)
+    public CostItemDraft(CostItem? item, bool planned = false)
     {
         _id = item?.Id ?? Guid.NewGuid();
         _recordedAt = item is null ? DateTimeOffset.UtcNow : item.RecordedAt;
@@ -33,7 +33,7 @@ public sealed class CostItemDraft : INotifyPropertyChanged
             ["Material"] = item?.Material ?? "", ["Floor"] = item?.Floor ?? "", ["Room"] = item?.Room ?? "",
             ["Quantity"] = (item?.Quantity ?? 1).ToString("0.###", CultureInfo.GetCultureInfo("de-DE")),
             ["Unit"] = item?.Unit ?? "Stück", ["UnitPrice"] = CostPlanViewModel.Format(item?.UnitPrice ?? 0),
-            ["Status"] = item?.Status ?? "Gekauft", ["Lea"] = CostPlanViewModel.Format(item?.Payments.Lea ?? 0),
+            ["Status"] = item?.Status ?? (planned ? "Geplant" : "Gekauft"), ["Lea"] = CostPlanViewModel.Format(item?.Payments.Lea ?? 0),
             ["Wolfgang"] = CostPlanViewModel.Format(item?.Payments.Wolfgang ?? 0),
             ["Jennifer"] = CostPlanViewModel.Format(item?.Payments.Jennifer ?? 0),
             ["Tobias"] = CostPlanViewModel.Format(item?.Payments.Tobias ?? 0)
@@ -97,7 +97,7 @@ public sealed class CostItemDraft : INotifyPropertyChanged
         try
         {
             if (Date is null && _recordedAt is not null) throw new InvalidDataException("Bitte ein Datum angeben.");
-            if (Date?.Date > DateTime.Today) throw new InvalidDataException("Das Datum darf nicht in der Zukunft liegen.");
+            if (this["Status"] != "Geplant" && Date?.Date > DateTime.Today) throw new InvalidDataException("Das Datum darf nicht in der Zukunft liegen.");
             var item = new CostItem(_id, this["Material"].Trim(), this["Floor"].Trim(), this["Room"].Trim(),
                 Number("Quantity"), this["Unit"].Trim(), Number("UnitPrice"), this["Status"],
                 new Payments(Number("Lea"), Number("Wolfgang"), Number("Jennifer"), Number("Tobias")))

@@ -25,7 +25,7 @@ public sealed class CostPlanViewModel : INotifyPropertyChanged
         _repayments = repayments ?? new ReimbursementEditor();
         _sales = sales ?? new SalesCreditEditor();
         _changed = changed;
-        AddCommand = new RelayCommand(() => Edit(null));
+        AddCommand = new RelayCommand(() => Edit(null)); AddPlannedCommand = new RelayCommand(() => Edit(null, true));
         EditCommand = new RelayCommand(p => Edit((CostItem)p!), p => p is CostItem);
         RemoveCommand = new RelayCommand(p =>
         {
@@ -74,6 +74,10 @@ public sealed class CostPlanViewModel : INotifyPropertyChanged
         var income = Credits.Where(c => c.Recipient == person).Sum(c => c.EffectiveAmount);
         return new PersonTotal(person, gross, received, income);
     }).ToArray();
+    public IReadOnlyList<CostItem> PlannedItems => Items.Where(i => i.Status == "Geplant").OrderBy(i => i.Date).ToArray();
+    public string PlannedTotalLabel => CostItem.Money(PlannedItems.Sum(i => i.Total));
+    public string PlannedHint => PlannedItems.Count == 0 ? "Noch keine geplanten Ausgaben erfasst." : $"{PlannedItems.Count} geplante Ausgaben";
+    public RelayCommand AddPlannedCommand { get; }
     public RelayCommand AddCommand { get; }
     public RelayCommand EditCommand { get; }
     public RelayCommand RemoveCommand { get; }
@@ -102,9 +106,9 @@ public sealed class CostPlanViewModel : INotifyPropertyChanged
         Notice = "";
         Notify();
     }
-    private void Edit(CostItem? existing)
+    private void Edit(CostItem? existing, bool planned = false)
     {
-        var result = _editor.Edit(existing);
+        var result = _editor.Edit(existing, planned);
         if (result is null) return;
         result.Validate();
         if (existing is null)

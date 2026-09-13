@@ -14,9 +14,9 @@ public sealed class CostItemEditor : ICostItemEditor
     public bool ConfirmRemoval(CostItem existing) => MessageBox.Show(Application.Current.MainWindow,
         $"Den Eintrag „{existing.Material}“ vom {existing.DateLabel} einschließlich seiner Zahlungen entfernen? Andere Einkäufe bleiben erhalten. Die Änderung wird erst mit dem Projekt gespeichert.",
         "Position entfernen", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) == MessageBoxResult.Yes;
-    public CostItem? Edit(CostItem? existing)
+    public CostItem? Edit(CostItem? existing, bool planned = false)
     {
-        var dialog = new CostItemWindow(existing) { Owner = Application.Current.MainWindow };
+        var dialog = new CostItemWindow(existing, planned) { Owner = Application.Current.MainWindow };
         return dialog.ShowDialog() == true ? dialog.Result : null;
     }
 }
