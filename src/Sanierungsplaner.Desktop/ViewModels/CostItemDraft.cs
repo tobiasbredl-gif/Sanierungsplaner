@@ -14,13 +14,20 @@ public sealed class CostItemDraft : INotifyPropertyChanged
     private string _error = "";
     private readonly DateTime? _initialDate;
     private readonly DateTimeOffset? _recordedAt;
+    private readonly bool _initialVat;
+    private bool _addVat;
+    public bool AddVat
+    {
+        get => _addVat;
+        set { _addVat = value; _error = ""; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(string.Empty)); }
+    }
     public DateTime? Date { get; set; }
     public CostItemDraft(CostItem? item)
     {
         _id = item?.Id ?? Guid.NewGuid();
         _recordedAt = item is null ? DateTimeOffset.UtcNow : item.RecordedAt;
         Date = item is null ? DateTime.Today : item.Date?.ToDateTime(TimeOnly.MinValue);
-        _initialDate = Date;
+        _initialDate = Date; _initialVat = _addVat = item?.AddVat ?? false;
         _values = new()
         {
             ["Material"] = item?.Material ?? "", ["Floor"] = item?.Floor ?? "", ["Room"] = item?.Room ?? "",
@@ -44,7 +51,7 @@ public sealed class CostItemDraft : INotifyPropertyChanged
             if (quantity <= 0 || quantity > 1000000 || decimal.Round(quantity, 3) != quantity
                 || price < 0 || price > 1000000 || decimal.Round(price, 2) != price)
                 throw new InvalidDataException("Bitte zuerst eine gültige Menge und einen Einzelpreis eingeben.");
-            var total = decimal.Round(quantity * price, 2, MidpointRounding.AwayFromZero);
+            var total = CostItem.CalculateTotal(quantity, price, AddVat);
             decimal others = 0;
             foreach (var other in new[] { "Lea", "Wolfgang", "Jennifer", "Tobias" }.Where(p => p != person))
             {
@@ -72,7 +79,7 @@ public sealed class CostItemDraft : INotifyPropertyChanged
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(string.Empty));
         }
     }
-    public bool IsDirty => Date != _initialDate || _values.Any(pair => _initial[pair.Key] != pair.Value);
+    public bool IsDirty => AddVat != _initialVat || Date != _initialDate || _values.Any(pair => _initial[pair.Key] != pair.Value);
     public IReadOnlyList<string> Statuses => CostItem.Statuses;
     public string Error => _error;
     public string TotalLabel
@@ -81,7 +88,7 @@ public sealed class CostItemDraft : INotifyPropertyChanged
         {
             if (!TryNumber("Quantity", out var quantity) || !TryNumber("UnitPrice", out var price)
                 || quantity > 1000000m || price > 1000000m) return "Menge und Preis prüfen";
-            return CostItem.Money(decimal.Round(quantity * price, 2, MidpointRounding.AwayFromZero));
+            return CostItem.Money(CostItem.CalculateTotal(quantity, price, AddVat));
         }
     }
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -94,7 +101,7 @@ public sealed class CostItemDraft : INotifyPropertyChanged
             var item = new CostItem(_id, this["Material"].Trim(), this["Floor"].Trim(), this["Room"].Trim(),
                 Number("Quantity"), this["Unit"].Trim(), Number("UnitPrice"), this["Status"],
                 new Payments(Number("Lea"), Number("Wolfgang"), Number("Jennifer"), Number("Tobias")))
-            { Date = Date is null ? null : DateOnly.FromDateTime(Date.Value), RecordedAt = _recordedAt };
+            { AddVat = AddVat, Date = Date is null ? null : DateOnly.FromDateTime(Date.Value), RecordedAt = _recordedAt };
             item.Validate();
             return item;
         }

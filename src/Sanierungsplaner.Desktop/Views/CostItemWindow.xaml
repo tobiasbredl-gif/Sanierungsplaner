@@ -36,6 +36,8 @@
                     <StackPanel Grid.Column="2"><TextBlock Text="Einheit *" /><TextBox Text="{Binding [Unit], UpdateSourceTrigger=PropertyChanged}" MaxLength="30" AutomationProperties.Name="Einheit" /></StackPanel>
                     <StackPanel Grid.Column="4"><TextBlock Text="Einzelpreis (€) *" /><TextBox x:Name="PriceInput" Style="{StaticResource NumericInput}" Text="{Binding [UnitPrice], UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Einzelpreis" /></StackPanel>
                 </Grid>
+                <CheckBox x:Name="VatInput" Content="19 % MwSt. hinzufügen" IsChecked="{Binding AddVat}" Margin="0,0,0,8" />
+                <TextBlock Text="Bei Auswahl: Einzelpreis ohne MwSt. eingeben. Der Gesamtbetrag enthält den Aufschlag." TextWrapping="Wrap" Margin="0,0,0,8" />
                 <TextBlock Text="{Binding TotalLabel}" FontSize="24" FontWeight="SemiBold" Margin="0,0,0,12" />
                 <TextBlock Text="Status" />
                 <ComboBox x:Name="StatusInput" ItemsSource="{Binding Statuses}" SelectedItem="{Binding [Status], UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Status" />

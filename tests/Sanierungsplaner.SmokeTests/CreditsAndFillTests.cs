@@ -23,6 +23,20 @@ internal static partial class Program
             draft.FillAmountCommand.Execute(person);
             Check(draft.Build()!.Payments.Total == 125, "Mehrfachklick verdoppelt nichts");
         }
+        var vat = new CostItemDraft(Sample() with { Quantity = 1, UnitPrice = 100, Payments = new Payments(20) });
+        Check(!vat.AddVat && !vat.IsDirty, "MwSt. standardmäßig aus");
+        vat.AddVat = true;
+        Check(vat.IsDirty, "MwSt. Änderung wird gespeichert");
+        vat.FillAmountCommand.Execute("Tobias");
+        var taxed = vat.Build()!;
+        Check(taxed.Total == 119 && taxed.Payments.Tobias == 99 && taxed.Outstanding == 0, "MwSt. und Teilzahlung");
+        var restored = System.Text.Json.JsonSerializer.Deserialize<CostItem>(System.Text.Json.JsonSerializer.Serialize(taxed))!;
+        Check(new CostItemDraft(restored).AddVat && restored.Total == 119, "MwSt. nach erneutem Laden");
+        vat.AddVat = false;
+        Check(vat.Build() is null, "Steuer entfernen darf keine Überzahlung erzeugen");
+        vat.FillAmountCommand.Execute("Tobias");
+        Check(vat.Build()!.Total == 100 && vat.Build()!.Payments.Tobias == 80, "Steuer wieder ausschalten");
+        Check(CostItem.CalculateTotal(0.333m, 0.5m, true) == 0.20m, "Netto und Steuer auf Cent runden");
         var shared = new CostItemDraft(Sample());
         shared.FillAmountCommand.Execute("Tobias");
         Check(shared.Build()!.Payments == new Payments(25, 40, 10, 50), "Andere Teilzahlungen bleiben erhalten");

@@ -1,6 +1,6 @@
 # Sanierungsplaner
 
-Native Windows-Desktop-App mit C# und WPF auf .NET 10. Version 0.5.1 bietet lokale Projekte, automatisch zusammengefasste Einkäufe mit Datum protokollierte Rückzahlungen von Tobias an Lea, Wolfgang und Jennifer sowie Verkaufsgutschriften und automatische Zahlungsbeträge.
+Native Windows-Desktop-App mit C# und WPF auf .NET 10. Version 0.6.0 bietet lokale Projekte, automatisch zusammengefasste Einkäufe mit Datum protokollierte Rückzahlungen von Tobias an Lea, Wolfgang und Jennifer sowie Verkaufsgutschriften und automatische Zahlungsbeträge.
 
 ## Ein Projekt anlegen
 
@@ -118,7 +118,7 @@ docs/                      Architektur und Umfang
 
 Enthalten sind Projektname (Pflichtfeld, maximal 120 Zeichen), Objektadresse (300 Zeichen), Notizen (10.000 Zeichen), Zeitstempel und Kostenpositionen samt Zahlungen und Budget. Excel-Export, Auswertungen nach Raum/Etage, Android-App und abgesicherte WLAN-Synchronisierung folgen in weiteren Schritten. Die abgestimmten Anforderungen stehen in [docs/product-requirements.md](docs/product-requirements.md).
 
-Bestehende Projekte aus v0.2, v0.3 und v0.4 werden weiterhin geladen. Fehlende Einkaufsdaten erscheinen als **Datum unbekannt (Altbestand)**; die App erfindet kein Datum. Bereits vorhandene gleiche Positionen werden in der Ansicht gruppiert, ihre ursprünglichen Einträge bleiben erhalten. Fehlende Rückzahlungen und Gutschriften beginnen als leeres Protokoll. Erst beim Speichern wird auf Dateiformat 4 aktualisiert; danach ist mindestens App-Version 0.5 erforderlich. Ältere App-Versionen verweigern das unbekannte Format, anstatt Informationen zu überschreiben.
+Bestehende Projekte aus v0.2, v0.3 und v0.4 werden weiterhin geladen. Fehlende Einkaufsdaten erscheinen als **Datum unbekannt (Altbestand)**; die App erfindet kein Datum. Bereits vorhandene gleiche Positionen werden in der Ansicht gruppiert, ihre ursprünglichen Einträge bleiben erhalten. Fehlende Rückzahlungen und Gutschriften beginnen als leeres Protokoll. Erst beim Speichern wird auf Dateiformat 5 aktualisiert; danach ist mindestens App-Version 0.6 erforderlich. Ältere App-Versionen verweigern das unbekannte Format, anstatt Informationen zu überschreiben.
 
 ## Lokale Daten und Sicherung
 
@@ -131,3 +131,7 @@ Bei einem Lesefehler zeigt die App den betroffenen Dateinamen an und sperrt neue
 Die Anwendung arbeitet lokal, stellt keine Netzwerkverbindungen her und enthält weder Anmeldung noch Credentials, Tokens oder Backend. GitHub-Zugangsdaten gehören ausschließlich zur Entwicklungsumgebung und niemals in die App oder ins Repository.
 
 Weitere Entscheidungen stehen in [docs/architecture.md](docs/architecture.md). Einstieg in die verwendete UI-Technik: [Microsoft WPF-Dokumentation](https://learn.microsoft.com/dotnet/desktop/wpf/).
+
+## Optionale Mehrwertsteuer
+
+Im Einkaufsformular ist **19 % MwSt. hinzufügen** standardmäßig ausgeschaltet. Bei Auswahl den Einzelpreis ohne Steuer eingeben. Menge × Einzelpreis wird auf Cent gerundet; darauf werden 19 % berechnet und ebenfalls auf Cent gerundet. Der Gesamtbetrag inklusive Steuer gilt für Budget, offene Beträge und Gesamtbetrag-Buttons. Beispiel: 100 € ergeben 119 €. Die Auswahl bleibt pro Einkauf gespeichert und im Verlauf sichtbar. Bestehende Einträge erhalten keinen automatischen Aufschlag. Das neue Dateiformat 5 verhindert, dass ältere App-Versionen die Steuer versehentlich ignorieren.

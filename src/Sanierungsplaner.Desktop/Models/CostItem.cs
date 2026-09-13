@@ -18,13 +18,19 @@ public sealed record Payments(decimal Lea = 0, decimal Wolfgang = 0, decimal Jen
 public sealed record CostItem(Guid Id, string Material, string Floor, string Room,
     decimal Quantity, string Unit, decimal UnitPrice, string Status, Payments Payments)
 {
+    public bool AddVat { get; init; }
+    public static decimal CalculateTotal(decimal quantity, decimal price, bool addVat)
+    {
+        var subtotal = decimal.Round(quantity * price, 2, MidpointRounding.AwayFromZero);
+        return subtotal + (addVat ? decimal.Round(subtotal * 0.19m, 2, MidpointRounding.AwayFromZero) : 0);
+    }
     public DateOnly? Date { get; init; }
     public DateTimeOffset? RecordedAt { get; init; }
     [JsonIgnore] public string DateLabel => Date?.ToString("dd.MM.yyyy") ?? "Datum unbekannt (Altbestand)";
-    [JsonIgnore] public string PurchaseLabel => $"{DateLabel} · {Quantity.ToString("0.###", CultureInfo.GetCultureInfo("de-DE"))} {Unit} × {Money(UnitPrice)} · {Status}";
+    [JsonIgnore] public string PurchaseLabel => $"{DateLabel} · {Quantity.ToString("0.###", CultureInfo.GetCultureInfo("de-DE"))} {Unit} × {Money(UnitPrice)} · {Status}{(AddVat ? " · zzgl. 19 % MwSt." : "")}";
     [JsonIgnore] public string PaymentsLabel => $"Lea: {Money(Payments.Lea)} · Wolfgang: {Money(Payments.Wolfgang)} · Jennifer: {Money(Payments.Jennifer)} · Tobias: {Money(Payments.Tobias)}";
     public static IReadOnlyList<string> Statuses { get; } = Array.AsReadOnly(new[] { "Geplant", "Gekauft", "Verbaut" });
-    [JsonIgnore] public decimal Total => decimal.Round(Quantity * UnitPrice, 2, MidpointRounding.AwayFromZero);
+    [JsonIgnore] public decimal Total => CalculateTotal(Quantity, UnitPrice, AddVat);
     [JsonIgnore] public decimal Outstanding => Total - Payments.Total;
     [JsonIgnore] public string TotalLabel => Money(Total);
     [JsonIgnore] public string PaidLabel => Money(Payments.Total);

@@ -67,7 +67,7 @@ internal static partial class Program
         Expect<InvalidDataException>(() => store.Load());
         Expect<InvalidDataException>(() => store.Save(updated, updated.Revision));
         Check(File.ReadAllText(file) == "{kaputt", "Beschädigte Datei bleibt erhalten");
-        File.WriteAllText(file, valid.Replace("\"SchemaVersion\": 4", "\"SchemaVersion\": 99"));
+        File.WriteAllText(file, valid.Replace("\"SchemaVersion\": 5", "\"SchemaVersion\": 99"));
         Expect<InvalidDataException>(() => store.Load());
         File.WriteAllText(file, valid);
         var legacy = JsonNode.Parse(valid)!;
@@ -80,7 +80,7 @@ internal static partial class Program
         var migrated = store.Load().Single();
         Check(migrated.Budget == 0 && migrated.Items.Length == 0 && migrated.Name == updated.Name, "Bestehendes v0.2-Projekt wird verlustfrei geladen");
         store.Save(migrated with { Revision = Guid.NewGuid() }, migrated.Revision);
-        Check(JsonNode.Parse(File.ReadAllText(file))!["SchemaVersion"]!.GetValue<int>() == 4, "Migration schreibt neues Format erst beim Speichern");
+        Check(JsonNode.Parse(File.ReadAllText(file))!["SchemaVersion"]!.GetValue<int>() == 5, "Migration schreibt neues Format erst beim Speichern");
         Check(!Directory.EnumerateFiles(folder, "*.tmp").Any(), "Keine temporären Dateien nach erfolgreichem Speichern");
     }
 
@@ -155,7 +155,7 @@ internal static partial class Program
         if (screenshot is not null) Capture(window, screenshot);
         model.ShowAboutCommand.Execute(null);
         Pump(window);
-        Check(model.ShowAbout && model.PageDescription.Contains("0.5.1"), "App-Information");
+        Check(model.ShowAbout && model.PageDescription.Contains("0.6.0"), "App-Information");
         model.ShowHomeCommand.Execute(null);
         model.OpenProjectCommand.Execute(model.Projects.Single());
         TestCostWindow(window, screenshot);

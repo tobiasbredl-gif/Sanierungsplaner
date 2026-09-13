@@ -14,7 +14,7 @@ Das Code-behind initialisiert den Datenkontext und delegiert den Schließschutz 
 
 `RenovationProject` ist ein unveränderlicher Datensatz mit GUID, Revisions-GUID, Name, Adresse, Notizen und UTC-Zeitstempeln. Die Oberfläche arbeitet mit einem getrennten Entwurf. Erst nach erfolgreichem Speichern wird dieser in die Projektliste übernommen. Ein fehlgeschlagener Schreibversuch erhält den Entwurf.
 
-`JsonProjectStore` schreibt pro Projekt eine Datei `<GUID>.json` unter `%LOCALAPPDATA%\Sanierungsplaner\Projects`. Neue Dokumente tragen `SchemaVersion: 4`; Versionen 1, 2 und 3 bleiben lesbar. Fehlende Kosten/Budgets (v1), Einkaufsdaten, Rückzahlungen und Gutschriften werden mit leerem Bestand bzw. unbekanntem Datum repräsentiert. Erst beim nächsten Speichern erfolgt die Aktualisierung. Unbekannte Versionen und ungültige Daten führen zu einem sichtbaren Fehler. Datendateien liegen außerhalb des Repositories und des Veröffentlichungsordners.
+`JsonProjectStore` schreibt pro Projekt eine Datei `<GUID>.json` unter `%LOCALAPPDATA%\Sanierungsplaner\Projects`. Neue Dokumente tragen `SchemaVersion: 5`; Versionen 1, 2, 3 und 4 bleiben lesbar. Fehlende Kosten/Budgets (v1), Einkaufsdaten, Rückzahlungen und Gutschriften werden mit leerem Bestand bzw. unbekanntem Datum repräsentiert. Erst beim nächsten Speichern erfolgt die Aktualisierung. Unbekannte Versionen und ungültige Daten führen zu einem sichtbaren Fehler. Datendateien liegen außerhalb des Repositories und des Veröffentlichungsordners.
 
 ## Kosten und Zahlungen
 
@@ -56,7 +56,7 @@ Optional akzeptiert der Test einen PNG-Zielpfad als einziges Argument. Neben der
 
 ## Weitere Ausbauschritte
 
-Die aus dem früheren Gespräch übernommenen Vorgaben stehen in [product-requirements.md](product-requirements.md). Dazu gehören Excel-Export, Android-Offline-Eingaben und ausschließlich authentifizierte, verschlüsselte WLAN-Synchronisierung mit expliziter Gerätefreigabe. Diese Netzwerkanbindung ist in Version 0.5.0 noch nicht vorhanden.
+Die aus dem früheren Gespräch übernommenen Vorgaben stehen in [product-requirements.md](product-requirements.md). Dazu gehören Excel-Export, Android-Offline-Eingaben und ausschließlich authentifizierte, verschlüsselte WLAN-Synchronisierung mit expliziter Gerätefreigabe. Diese Netzwerkanbindung ist in Version 0.6.0 noch nicht vorhanden.
 
 ## Verkaufsgutschriften und automatische Beträge
 
@@ -67,3 +67,6 @@ Nettoausgaben = ursprüngliche Zahlungen − wirksame Einnahmen. Restbudget = Bu
 `FillAmountCommand` trägt den gerundeten Positionsbetrag abzüglich der drei anderen Zahlungen beim ausgewählten Zahler ein. Fremde Zahlungen bleiben erhalten, erneutes Klicken ist idempotent. Ungültige oder überhöhte Eingaben werden abgewiesen. Positive Zahlungen setzen einen geplanten Einkauf auf gekauft.
 
 Tests prüfen die vier Betragsbuttons, Teilzahlungen, wiederholtes Klicken, Rundung, Verkäufe für alle Personen, Rückzahlungen nach Einnahmen, Überschüsse, Stornos, unveränderliche gespeicherte Journale und das erneute Laden. Der Gutschriftdialog wird als echtes WPF-Fenster bedient.
+
+
+Optionale MwSt.: CostItem.AddVat speichert je Einkauf den 19-Prozent-Aufschlag. CalculateTotal rundet zunächst Menge × Einzelpreis auf Cent und addiert die separat auf Cent gerundete Steuer. Modell, Vorschau und Zahlungsübernahme verwenden dieselbe Berechnung. Fehlende Auswahl in Altbeständen bedeutet false; Dateiformat 5 schützt vor Berechnungen durch ältere Apps.
