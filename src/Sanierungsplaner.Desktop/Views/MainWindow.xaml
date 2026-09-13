@@ -1,49 +1,113 @@
 <Window x:Class="Sanierungsplaner.Desktop.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Sanierungsplaner" Width="1100" Height="740" Style="{StaticResource {x:Type Window}}"
-        MinWidth="780" MinHeight="580" WindowStartupLocation="CenterScreen"
-        Language="de-DE">
+        Title="Sanierungsplaner" Width="1120" Height="820" Style="{StaticResource {x:Type Window}}"
+        MinWidth="780" MinHeight="580" WindowStartupLocation="CenterScreen" Language="de-DE">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="VisibleWhenTrue" />
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#DDE4DC" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="24" />
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Padding" Value="12,10" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="BorderBrush" Value="#9EAEA4" />
+            <Setter Property="Background" Value="#FCFDFC" />
+        </Style>
+        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#E3EBDE" />
+            <Setter Property="Foreground" Value="#153E33" />
+        </Style>
+    </Window.Resources>
     <Grid Background="{Binding Background, RelativeSource={RelativeSource AncestorType=Window}}">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="232" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
+        <Grid.ColumnDefinitions><ColumnDefinition Width="232" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
         <Border Background="#153E33" Padding="24,32">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Top">
                     <TextBlock Text="S /" Foreground="#B9D8AB" FontSize="36" FontWeight="Bold" />
                     <TextBlock Text="Sanierungsplaner" Foreground="White" FontSize="20" FontWeight="SemiBold" Margin="0,16,0,4" />
                     <TextBlock Text="PLATZ FÜR VERÄNDERUNG" Foreground="#BDD0C8" FontSize="10" Margin="0,0,0,40" />
-                    <Button Content="_Übersicht" Command="{Binding ShowHomeCommand}" HorizontalContentAlignment="Left" Margin="0,0,0,10" />
+                    <Button Content="_Projekte" Command="{Binding ShowHomeCommand}" HorizontalContentAlignment="Left" Margin="0,0,0,10" />
                     <Button Content="Über die _App" Command="{Binding ShowAboutCommand}" HorizontalContentAlignment="Left" />
                 </StackPanel>
                 <StackPanel DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
                     <TextBlock Text="WINDOWS DESKTOP" Foreground="#BDD0C8" FontSize="11" />
-                    <TextBlock Text="Grundgerüst · 0.1.0" Foreground="White" Margin="0,6,0,0" />
+                    <TextBlock Text="Projektverwaltung · 0.2.0" Foreground="White" Margin="0,6,0,0" />
                 </StackPanel>
             </DockPanel>
         </Border>
-        <DockPanel Grid.Column="1" Margin="40,32">
-            <Grid DockPanel.Dock="Top" Margin="0,0,0,36">
+        <DockPanel Grid.Column="1" Margin="32,28">
+            <Grid DockPanel.Dock="Top" Margin="0,0,0,24">
                 <TextBlock Text="DEIN ARBEITSPLATZ" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
                 <Border HorizontalAlignment="Right" Background="#E3EBDE" CornerRadius="12" Padding="12,5">
                     <TextBlock Text="Lokal · ohne Anmeldung" FontSize="11" />
                 </Border>
             </Grid>
-            <TextBlock DockPanel.Dock="Bottom" Text="Schritt für Schritt zu einem durchdachten Sanierungsplan." Foreground="#596B62" FontSize="12" Margin="0,24,0,0" />
+            <TextBlock DockPanel.Dock="Bottom" Text="{Binding Status}" Foreground="#176B56" FontSize="12" Margin="0,16,0,0" AutomationProperties.LiveSetting="Polite" />
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                 <StackPanel>
-                    <TextBlock Text="{Binding PageTitle}" FontSize="36" FontWeight="SemiBold" Margin="0,0,0,16" />
-                    <TextBlock Text="{Binding PageDescription}" FontSize="16" Foreground="#596B62" LineHeight="26" Margin="0,0,0,32" />
-                    <Border Background="White" BorderBrush="#DDE4DC" BorderThickness="1" CornerRadius="12" Padding="28">
+                    <TextBlock Text="{Binding PageTitle}" FontSize="32" FontWeight="SemiBold" Margin="0,0,0,12" />
+                    <TextBlock Text="{Binding PageDescription}" FontSize="15" Foreground="#596B62" LineHeight="24" Margin="0,0,0,24" />
+                    <Border Background="#FFF0E9" BorderBrush="#C67858" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,16" Visibility="{Binding HasError, Converter={StaticResource VisibleWhenTrue}}">
+                        <TextBlock Text="{Binding Error}" Foreground="#852D14" AutomationProperties.LiveSetting="Assertive" />
+                    </Border>
+                    <StackPanel Visibility="{Binding ShowProjects, Converter={StaticResource VisibleWhenTrue}}">
+                        <WrapPanel Margin="0,0,0,20">
+                            <Button x:Name="NewProjectButton" Content="+ _Neues Projekt" Command="{Binding NewProjectCommand}" Margin="0,0,12,8" />
+                            <Button Content="Erneut laden" Command="{Binding ReloadCommand}" Style="{StaticResource SecondaryButton}" Margin="0,0,0,8" />
+                        </WrapPanel>
+                        <Border Style="{StaticResource Card}" Visibility="{Binding IsEmpty, Converter={StaticResource VisibleWhenTrue}}" Margin="0,0,0,20">
+                            <StackPanel>
+                                <TextBlock Text="Dein Vorhaben beginnt hier." FontSize="22" FontWeight="SemiBold" Margin="0,0,0,12" />
+                                <TextBlock Text="Noch keine Projekte vorhanden. Starte mit einem Namen und ergänze die Adresse und deine ersten Ideen." Foreground="#596B62" LineHeight="24" />
+                            </StackPanel>
+                        </Border>
+                        <TextBlock Text="{Binding ProjectCount}" Foreground="#596B62" FontSize="12" Margin="0,0,0,12" />
+                        <ItemsControl ItemsSource="{Binding Projects}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" FontSize="21" FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding AddressLabel}" Foreground="#596B62" Margin="0,8,0,12" />
+                                            <TextBlock Text="{Binding UpdatedLabel}" Foreground="#596B62" FontSize="12" Margin="0,0,0,16" />
+                                            <Button Content="Projekt öffnen" HorizontalAlignment="Left" Command="{Binding DataContext.OpenProjectCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                    <StackPanel Visibility="{Binding ShowEditor, Converter={StaticResource VisibleWhenTrue}}">
+                        <Button Content="← Alle Projekte" Command="{Binding BackCommand}" HorizontalAlignment="Left" Style="{StaticResource SecondaryButton}" Margin="0,0,0,16" />
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <Label Content="Projekt_name *" Target="{Binding ElementName=ProjectName}" Padding="0" Margin="0,0,0,8" />
+                                <TextBox x:Name="ProjectName" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" MaxLength="120" AutomationProperties.Name="Projektname" />
+                                <Label Content="_Objektadresse" Target="{Binding ElementName=ProjectAddress}" Padding="0" Margin="0,20,0,8" />
+                                <TextBox x:Name="ProjectAddress" Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}" MaxLength="300" AutomationProperties.Name="Objektadresse" />
+                                <Label Content="Noti_zen" Target="{Binding ElementName=ProjectNotes}" Padding="0" Margin="0,20,0,8" />
+                                <TextBox x:Name="ProjectNotes" Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}" MaxLength="10000" AcceptsReturn="True" TextWrapping="Wrap" Height="130" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="Notizen" />
+                                <TextBlock Text="* Pflichtfeld · Adresse und Notizen sind optional." Foreground="#596B62" FontSize="12" Margin="0,12,0,20" />
+                                <WrapPanel>
+                                    <Button x:Name="SaveProjectButton" Content="Projekt _speichern" Command="{Binding SaveProjectCommand}" Margin="0,0,16,8" />
+                                    <TextBlock Text="{Binding DraftStatus}" VerticalAlignment="Center" Foreground="#596B62" FontSize="12" Margin="0,0,0,8" />
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                    <Border Style="{StaticResource Card}" Visibility="{Binding ShowAbout, Converter={StaticResource VisibleWhenTrue}}">
                         <StackPanel>
-                            <TextBlock Text="Das Fundament steht." FontSize="22" FontWeight="SemiBold" Margin="0,0,0,12" />
-                            <TextBlock Text="Diese erste Version startet als eigenständige Desktop-App. Über die Navigation kannst du zwischen Übersicht und App-Informationen wechseln." Foreground="#596B62" LineHeight="23" />
-                            <Border Height="1" Background="#E4E9E2" Margin="0,24" />
-                            <TextBlock Text="Nächster Ausbauschritt" FontWeight="SemiBold" Margin="0,0,0,8" />
-                            <TextBlock Text="Projektverwaltung, Maßnahmen und Kostenplanung können auf dieser Basis ergänzt werden. Diese Funktionen sind noch nicht enthalten." Foreground="#596B62" LineHeight="23" />
-                            <TextBlock Text="Es werden noch keine Projektdaten gespeichert." FontSize="12" Foreground="#596B62" Margin="0,20,0,0" />
+                            <TextBlock Text="Ein Zuhause für deine Projekte." FontSize="22" FontWeight="SemiBold" Margin="0,0,0,12" />
+                            <TextBlock Text="Lege Projekte an und bearbeite Name, Objektadresse und Notizen. Gespeicherte Projekte stehen beim nächsten Start wieder bereit." Foreground="#596B62" LineHeight="24" />
+                            <TextBlock Text="Dein Speicherordner" FontWeight="SemiBold" Margin="0,24,0,8" />
+                            <TextBox Text="{Binding StoragePath, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" AutomationProperties.Name="Speicherordner" />
+                            <TextBlock Text="Die Daten liegen als lesbare Dateien auf diesem Computer. Sichere diesen Ordner bei Bedarf. Es gibt noch keine Cloud-Synchronisierung oder automatische Sicherung." Foreground="#596B62" Margin="0,12,0,20" LineHeight="24" />
+                            <TextBlock Text="Als Nächstes: Maßnahmen und Kostenplanung." FontWeight="SemiBold" />
                         </StackPanel>
                     </Border>
                 </StackPanel>

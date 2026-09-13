@@ -2,9 +2,19 @@ using System.Windows.Input;
 
 namespace Sanierungsplaner.Desktop.Commands;
 
-public sealed class RelayCommand(Action execute) : ICommand
+public sealed class RelayCommand : ICommand
 {
-    public bool CanExecute(object? parameter) => true;
-    public void Execute(object? parameter) => execute();
-    public event EventHandler? CanExecuteChanged { add { } remove { } }
+    private readonly Action<object?> _execute;
+    private readonly Predicate<object?>? _canExecute;
+    public RelayCommand(Action execute, Func<bool>? canExecute = null)
+        : this(_ => execute(), canExecute is null ? null : _ => canExecute()) { }
+    public RelayCommand(Action<object?> execute, Predicate<object?>? canExecute = null)
+    {
+        _execute = execute;
+        _canExecute = canExecute;
+    }
+    public bool CanExecute(object? parameter) => _canExecute?.Invoke(parameter) ?? true;
+    public void Execute(object? parameter) { if (CanExecute(parameter)) _execute(parameter); }
+    public event EventHandler? CanExecuteChanged;
+    public void Refresh() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
 }
