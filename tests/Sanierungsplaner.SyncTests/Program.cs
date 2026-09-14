@@ -14,6 +14,7 @@ void Reject(Action action){try{action();}catch(Exception e)when(e is Unauthorize
 async Task RejectAsync(Func<Task> action){try{await action();}catch(Exception e)when(e is UnauthorizedAccessException or InvalidDataException or IOException or HttpRequestException){return;}throw new Exception("Expected rejection");}
 try
 {
+ MeshTests.Run(Path.Combine(root,"MeshTests"));
  var time=DateTimeOffset.UtcNow;var registry=new DeviceRegistry(Path.Combine(root,"registry"),()=>time);
  var token=SyncRules.NewSecret();var secret=registry.Invite("Tobias");registry.Claim(new(secret,"Testhandy",token));Reject(()=>registry.Authorized(token,d=>d.Role));Reject(()=>registry.Claim(new(secret,"Replay",SyncRules.NewSecret())));
  var id=registry.Pending.Single().Id;registry.Approve(id);Check(registry.Authorized(token,d=>d.Role)=="Tobias","PC assigns role");

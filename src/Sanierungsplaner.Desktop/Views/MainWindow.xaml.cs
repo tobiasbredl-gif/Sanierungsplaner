@@ -9,9 +9,26 @@ public partial class MainWindow : Window
     private void DeleteProject(object sender,RoutedEventArgs e)
     {
         var project=(Models.RenovationProject)((System.Windows.Controls.Button)sender).Tag;
-        if(MessageBox.Show(this,$"„{project.Name}“ für alle löschen? Kosten und Zahlungen verschwinden beim nächsten Abgleich auch auf allen Handys. Eine Sicherung bleibt im Ordner Projects/Deleted erhalten.","Projekt löschen",MessageBoxButton.YesNo,MessageBoxImage.Warning,MessageBoxResult.No)!=MessageBoxResult.Yes)return;
+        if(MessageBox.Show(this,$"Bist du sicher, dass du das Projekt „{project.Name}“ für alle Nutzer löschen möchtest? Kosten und Zahlungen verschwinden beim nächsten Abgleich auch auf allen Handys. Eine Sicherung bleibt erhalten.","Projekt löschen",MessageBoxButton.YesNo,MessageBoxImage.Warning,MessageBoxResult.No)!=MessageBoxResult.Yes)return;
         try{var model=(MainWindowViewModel)DataContext;new JsonProjectStore(model.StoragePath).Delete(project.Id,project.Revision);model.ReloadCommand.Execute(null);}
         catch(Exception error){MessageBox.Show(this,error.Message,"Löschen nicht abgeschlossen");}
+    }
+    private readonly System.Windows.Threading.DispatcherTimer meshTimer=new(){Interval=TimeSpan.FromSeconds(60)};
+    private bool meshBusy;
+    private async Task AutomaticMesh()
+    {
+        if(meshBusy||syncServer?.Running!=true)return;
+        meshBusy=true;
+        try
+        {
+            syncServer.Mesh.Refresh(syncServer.Url);
+            await syncServer.Mesh.Engine.Synchronize();
+            var model=(MainWindowViewModel)DataContext;
+            model.SyncStatus=syncServer.Mesh.Engine.LastStatus;
+            if(model.ShowProjects&&!model.IsDirty)model.ReloadCommand.Execute(null);
+        }
+        catch(Exception error){((MainWindowViewModel)DataContext).SyncStatus="Abgleich nicht abgeschlossen: "+error.Message;}
+        finally{meshBusy=false;}
     }
     private Sync.LanSyncServer? syncServer;
     private void OpenSync(object sender, RoutedEventArgs e)
@@ -30,7 +47,23 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         DataContext = model;
-        Closed += async (_, _) => { if(syncServer is not null) await syncServer.DisposeAsync(); };
+        meshTimer.Tick+=async(_,_)=>await AutomaticMesh();
+        Loaded+=async(_,_)=>
+        {
+            try
+            {
+                var folder=System.IO.Path.Combine(System.IO.Path.GetDirectoryName(model.StoragePath)!,"Sync");
+                var saved=System.IO.Path.Combine(folder,"auto-address.txt");
+                if(System.IO.File.Exists(saved))
+                {
+                    var address=Sync.LanSyncServer.Addresses().FirstOrDefault(a=>a.Address==System.IO.File.ReadAllText(saved));
+                    if(address!=null){syncServer??=new(new JsonProjectStore(model.StoragePath),folder);await syncServer.Start(address);await AutomaticMesh();}
+                }
+            }
+            catch(Exception error){MessageBox.Show(this,"Automatischer Geräteabgleich nicht gestartet: "+error.Message,"WLAN-Abgleich");}
+            meshTimer.Start();
+        };
+        Closed += async (_, _) => { meshTimer.Stop();if(syncServer is not null) await syncServer.DisposeAsync(); };
         Closing += (_, e) => e.Cancel = !model.CanLeaveEditor();
     }
 }

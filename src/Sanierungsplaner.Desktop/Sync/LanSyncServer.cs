@@ -15,6 +15,7 @@ namespace Sanierungsplaner.Desktop.Sync;
 public sealed class LanSyncServer : IAsyncDisposable
 {
  readonly IProjectStore store;readonly string folder;readonly DeviceRegistry registry;readonly X509Certificate2 certificate;
+ public MeshAuthority Mesh {get; private set;}=null!;
  WebApplication? app;readonly SemaphoreSlim lifecycle=new(1,1);
  public sealed record LanAddress(string Address,int Prefix,string Name){public override string ToString()=>Name+" · "+Address;}
  public DeviceRegistry Registry=>registry;
@@ -22,7 +23,7 @@ public sealed class LanSyncServer : IAsyncDisposable
  public string Url {get;private set;}="";
  public string Fingerprint=>Convert.ToHexString(SHA256.HashData(certificate.RawData));
  public LanSyncServer(IProjectStore store,string folder,X509Certificate2? testCertificate=null)
- {this.store=store;this.folder=folder;Directory.CreateDirectory(folder);registry=new(folder);certificate=testCertificate??LoadCertificate(folder);}
+ {this.store=store;this.folder=folder;Directory.CreateDirectory(folder);registry=new(folder);certificate=testCertificate??LoadCertificate(folder);Mesh=new((JsonProjectStore)store,folder,registry,certificate);}
  public static IReadOnlyList<LanAddress> Addresses()=>NetworkInterface.GetAllNetworkInterfaces().Where(n=>n.OperationalStatus==OperationalStatus.Up&&n.NetworkInterfaceType!=NetworkInterfaceType.Loopback).SelectMany(n=>n.GetIPProperties().UnicastAddresses.Where(a=>SyncRules.PrivateIp(a.Address)).Select(a=>new LanAddress(a.Address.ToString(),a.PrefixLength,n.Name))).ToArray();
  public async Task Start(LanAddress address)
  {
@@ -42,6 +43,16 @@ public sealed class LanSyncServer : IAsyncDisposable
     catch(InvalidDataException ex){context.Response.StatusCode=400;await context.Response.WriteAsJsonAsync(new{Error=ex.Message});}
     catch(JsonException){context.Response.StatusCode=400;}
     catch(IOException){context.Response.StatusCode=409;await context.Response.WriteAsJsonAsync(new{Error="Speicherkonflikt. Beide Versionen bleiben erhalten."});}
+   });
+   next.MapPost("/mesh/register",async(HttpContext c)=>
+   {
+    var r=await c.Request.ReadFromJsonAsync<MeshRegistration>()??throw new InvalidDataException();
+    return registry.Authorized(Token(c),d=>Results.Json(Mesh.Register(d.Id,r,Url)));
+   });
+   next.MapPost("/mesh",async(HttpContext c)=>
+   {
+    var p=await c.Request.ReadFromJsonAsync<SignedPacket>()??throw new InvalidDataException();
+    Mesh.Refresh(Url);return Results.Json(Mesh.Engine.Exchange(p));
    });
    next.MapPost("/pair",async(HttpContext c)=>{var request=await c.Request.ReadFromJsonAsync<PairRequest>()??throw new InvalidDataException("Leere Kopplungsanfrage.");registry.Claim(request);return Results.Ok(new{Pending=true});});
    next.MapGet("/identity",(HttpContext c)=>registry.Authorized(Token(c),d=>Results.Json(new DeviceIdentity(d.Id,d.Name,d.Role))));
@@ -71,7 +82,7 @@ public sealed class LanSyncServer : IAsyncDisposable
      return Results.Json(new SyncReceipt(saved));
     });
    });
-   try{await next.StartAsync();app=next;Url=$"https://{ip}:{SyncRules.Port}/";}catch{await next.DisposeAsync();throw;}
+   try{await next.StartAsync();app=next;Url=$"https://{ip}:{SyncRules.Port}/";Mesh.Refresh(Url);File.WriteAllText(Path.Combine(folder,"auto-address.txt"),address.Address);}catch{await next.DisposeAsync();throw;}
   }finally{lifecycle.Release();}
  }
  public string Invite(string role)
@@ -79,6 +90,7 @@ public sealed class LanSyncServer : IAsyncDisposable
   if(!Running)throw new InvalidOperationException("Zuerst WLAN-Abgleich starten.");
   return "SP1:"+Convert.ToBase64String(JsonSerializer.SerializeToUtf8Bytes(new PairInvite(Url,Fingerprint,registry.Invite(role))));
  }
+ public void DisableAutomaticStart(){File.Delete(Path.Combine(folder,"auto-address.txt"));}
  public async Task Stop()
  {
   await lifecycle.WaitAsync();try{registry.StopPairing();if(app!=null){await app.StopAsync();await app.DisposeAsync();app=null;Url="";}}finally{lifecycle.Release();}

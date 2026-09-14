@@ -27,13 +27,25 @@ public partial class MainActivity
  void SyncOptions(LinearLayout box)
  {
   Text(box,"PC-Kopplung und Gerätefreigabe",21,true);
+  Text(box,"Der PC verwaltet eure Freigaben. Die Handys gleichen beim App-Start und nachts zwischen 22 und 03 Uhr direkt im Heim-WLAN ab.");
+  Text(box,MeshRuntime.Status,13);
+  Button(box,"Hintergrundabgleich einschalten",()=>{StartMeshService(true);return Task.CompletedTask;});
+  Button(box,"Hintergrundabgleich ausschalten",async()=>{GetSharedPreferences("sync",FileCreationMode.Private)!.Edit()!.PutBoolean("background",false)!.Apply();StopService(new Intent(this,typeof(MeshService)));await MeshRuntime.Stop();});
   Text(box,binding?.Role is string role?"Deine vom PC zugewiesene Rolle: "+role:"Keine aktive Rolle. Erstattungen sind gesperrt.");
   Text(box,syncMessage,13);
   if(binding!=null)Text(box,"Prüfnummer für den PC: "+SyncRules.Hash(binding.Token)[..8],18,true);
   Text(box,"Am PC Handys / WLAN öffnen, Heimnetz starten und einen Code mit der gewünschten Rolle erzeugen. Diesen Code hier einfügen. Danach das Handy am PC freigeben.");
   Button(box,binding==null?"PC koppeln":"Neu koppeln",Pair);
   Button(box,"Freigabe prüfen / Jetzt abgleichen",()=>Synchronize(false),binding!=null);
-  if(binding!=null)Button(box,"Verbindung auf diesem Handy entfernen",async()=>{if(await Confirm("Verbindung entfernen?","Lokale Projekte bleiben erhalten. Am PC das Gerät zusätzlich widerrufen.")){bindingStore.Clear();binding=null;syncMessage="Verbindung entfernt.";Render();}});
+  if(binding!=null)Button(box,"Verbindung auf diesem Handy entfernen",async()=>{if(await Confirm("Verbindung entfernen?","Lokale Projekte bleiben erhalten. Am PC das Gerät zusätzlich widerrufen.")){StopService(new Intent(this,typeof(MeshService)));await MeshRuntime.Stop();bindingStore.Clear();binding=null;syncMessage="Verbindung entfernt.";Render();}});
+ }
+ void StartMeshService(bool enable=false)
+ {
+  var preferences=GetSharedPreferences("sync",FileCreationMode.Private)!;
+  if(enable)preferences.Edit()!.PutBoolean("background",true)!.Apply();
+  if(!preferences.GetBoolean("background",true))return;
+  if(OperatingSystem.IsAndroidVersionAtLeast(33)&&CheckSelfPermission("android.permission.POST_NOTIFICATIONS")!=global::Android.Content.PM.Permission.Granted)RequestPermissions(new[]{"android.permission.POST_NOTIFICATIONS"},714);
+  StartForegroundService(new Intent(this,typeof(MeshService)));
  }
  async Task Pair()
  {
@@ -43,33 +55,32 @@ public partial class MainActivity
   if(entered==null)return;
   var invite=SyncClient.Decode(entered);var candidate=new ClientBinding(invite.Url,invite.Fingerprint,SyncRules.NewSecret(),null,null);
   using(var client=new SyncClient(candidate))await client.Claim(invite.Secret,name);
+  StopService(new Intent(this,typeof(MeshService)));await MeshRuntime.Stop();
+  var meshFolder=System.IO.Path.Combine(FilesDir!.AbsolutePath,"Mesh");
+  var anchor=System.IO.Path.Combine(meshFolder,"authority.cer");
+  if(File.Exists(anchor))
+  {
+   using var old=System.Security.Cryptography.X509Certificates.X509CertificateLoader.LoadCertificate(Convert.FromBase64String(File.ReadAllText(anchor)));
+   if(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(old.RawData))!=candidate.Fingerprint)Directory.Move(meshFolder,meshFolder+"-Sicherung-"+DateTime.UtcNow.Ticks);
+  }
   bindingStore.Save(candidate);binding=candidate;syncMessage="Anfrage gesendet. Prüfnummer am PC vergleichen: "+SyncRules.Hash(candidate.Token)[..8]+". Dieses Handy am PC freigeben, danach Freigabe prüfen wählen.";Render();await Message("Freigabe am PC",syncMessage);
  }
  async Task Synchronize(bool automatic)
  {
   if(binding==null||syncBusy||formOpen)return;
-  if(automatic&&(model.IsEditing||model.ShowAbout))return;
+  if(automatic&&model.IsDirty)return;
   if(model.IsDirty){if(automatic)return;await Message("Zuerst speichern","Bitte Projektänderungen speichern oder verwerfen, bevor du abgleichst.");return;}
   await syncGate.WaitAsync();syncBusy=true;
   try
   {
-   using var client=new SyncClient(binding);var identity=await client.Identity();
-   binding=binding with{Role=identity.Role,DeviceId=identity.Id};bindingStore.Save(binding);
    var selected=model.SelectedProjectTab;var currentId=openedId;var editing=model.IsEditing;
-   using var busy=new AlertDialog.Builder(this)!.SetTitle("Sicherer WLAN-Abgleich")!.SetMessage("Projekte werden geprüft …")!.SetCancelable(false)!.Create()!;if(!automatic)busy.Show();
-   try
-   {
-    await client.Synchronize(new JsonProjectStore(model.StoragePath),SyncFolder,async(phone,pc)=>
-    {
-     if(automatic)return ConflictChoice.Cancel;
-     var choice=await Choose("Konflikt: "+phone.Name,new[]{"PC-Version übernehmen","Handy-Version übertragen","Abbrechen – beide behalten"});
-     if(choice==0&&await Confirm("PC-Version übernehmen?","Die lokalen Änderungen werden durch den PC-Stand ersetzt. Beide Stände werden vorher als lokale Konfliktsicherung aufbewahrt."))return ConflictChoice.Pc;
-     if(choice==1&&await Confirm("Handy-Version übertragen?","Die Änderungen am PC werden durch den Handy-Stand ersetzt. Bestehende Protokolle dürfen nicht entfernt werden; der PC kann die Übernahme ablehnen."))return ConflictChoice.Phone;
-     return ConflictChoice.Cancel;
-    });
-   }finally{if(!automatic)busy.Dismiss();}
-   syncMessage="Letzter erfolgreicher Abgleich: "+DateTime.Now.ToString("dd.MM.yyyy HH:mm");
-   File.WriteAllText(System.IO.Path.Combine(SyncFolder,"last-sync.txt"),syncMessage);
+   StartMeshService();
+   await MeshRuntime.Tick(this);
+   binding=bindingStore.Load();
+   syncMessage=MeshRuntime.Status;
+   Directory.CreateDirectory(SyncFolder);File.WriteAllText(System.IO.Path.Combine(SyncFolder,"last-sync.txt"),syncMessage);
+   if(model.IsDirty)return;
+   selected=model.SelectedProjectTab;currentId=openedId;editing=model.IsEditing;
    model.ReloadCommand.Execute(null);
    if(editing&&currentId is Guid id){var p=model.Projects.FirstOrDefault(p=>p.Id==id);if(p!=null){model.OpenProjectCommand.Execute(p);model.SelectedProjectTab=selected;}}
    Render();
@@ -87,16 +98,15 @@ public partial class MainActivity
   formOpen=true;
   try
   {
-   if(!await Confirm("Projekt für alle löschen?",$"„{project.Name}“ wird am PC und beim nächsten Abgleich auf allen Handys gelöscht, einschließlich Kosten und Zahlungen. Eine Sicherung bleibt erhalten. Der PC muss erreichbar sein."))return;
+   if(!await Confirm("Projekt für alle löschen?",$"Bist du sicher, dass du das Projekt „{project.Name}“ für alle Nutzer löschen möchtest? Kosten und Zahlungen werden beim nächsten Abgleich auf allen Geräten entfernt. Eine Sicherung bleibt erhalten.","Für alle löschen"))return;
    if(!await ConfirmOwner("Projektlöschung als Tobias bestätigen"))return;
    await syncGate.WaitAsync();syncBusy=true;
    try
    {
-    using var client=new SyncClient(binding);
-    await client.Delete(project);
-    new JsonProjectStore(model.StoragePath).Delete(project.Id,null,true);
+    await MeshRuntime.Gate.WaitAsync();
+    try{if(MeshRuntime.Engine==null)throw new InvalidOperationException("Zuerst Geräteabgleich einrichten.");MeshRuntime.Engine.Delete(project);}finally{MeshRuntime.Gate.Release();}
     model.ReloadCommand.Execute(null);Render();
-    await Message("Projekt gelöscht","Die Löschung wurde am PC gespeichert. Andere Handys übernehmen sie beim nächsten Abgleich.");
+    await Message("Projekt gelöscht","Die Löschung ist gespeichert. PC und andere Handys übernehmen sie beim nächsten Abgleich.");
    }
    finally{syncBusy=false;syncGate.Release();}
   }

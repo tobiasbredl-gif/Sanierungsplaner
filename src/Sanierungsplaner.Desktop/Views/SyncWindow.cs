@@ -17,7 +17,7 @@ public sealed class SyncWindow : Window
   panel.Children.Add(new TextBlock{Text="PC und Handy müssen im selben Heimnetz sein. Erstattungen und deren Stornos dürfen nur Handys mit der Rolle Tobias senden. Nicht freigegebene Geräte erhalten keine Projektdaten.",TextWrapping=TextWrapping.Wrap});
   address.ItemsSource=LanSyncServer.Addresses();address.SelectedIndex=0;address.Margin=new Thickness(0,16,0,8);panel.Children.Add(address);
   Add(panel,"WLAN-Abgleich starten",async()=>{if(address.SelectedItem is not LanSyncServer.LanAddress selected)throw new InvalidOperationException("Keine private Netzwerkadresse gefunden.");await server.Start(selected);status.Text="Bereit: "+server.Url+" · Fenster darf geschlossen werden; die Windows-App muss geöffnet bleiben.";});
-  Add(panel,"WLAN-Abgleich stoppen",async()=>{await server.Stop();invitation.Clear();status.Text="WLAN-Abgleich gestoppt.";});
+  Add(panel,"WLAN-Abgleich stoppen",async()=>{await server.Stop();server.DisableAutomaticStart();invitation.Clear();status.Text="WLAN-Abgleich gestoppt.";});
   Add(panel,"Windows-Zugriff im privaten Heimnetz erlauben",()=>
   {
    var exe=Environment.ProcessPath??throw new InvalidOperationException("Programmpfad fehlt.");
@@ -39,6 +39,21 @@ public sealed class SyncWindow : Window
    return Task.CompletedTask;
   });
   panel.Children.Add(new TextBlock{Text="3. Handy prüfen und freigeben",FontSize=20,FontWeight=FontWeights.SemiBold,Margin=new Thickness(0,18,0,12)});panel.Children.Add(devices);
+  Add(panel,"Jetzt mit allen Geräten abgleichen",async()=>{if(!server.Running)throw new InvalidOperationException("Zuerst WLAN-Abgleich starten.");server.Mesh.Refresh(server.Url);await server.Mesh.Engine.Synchronize();status.Text=server.Mesh.Engine.LastStatus;});
+  Add(panel,"Konflikte prüfen",()=>
+  {
+   var conflicts=server.Mesh.Engine.Conflicts;
+   if(conflicts.Length==0){status.Text="Keine offenen Konflikte.";return Task.CompletedTask;}
+   var review=new Window{Owner=this,Title="Konflikte – beide Stände sind gespeichert",Width=650,Height=550};var rows=new StackPanel{Margin=new Thickness(20)};review.Content=new ScrollViewer{Content=rows};
+   foreach(var conflict in conflicts)
+   {
+    var c=conflict.Data;
+    rows.Children.Add(new TextBlock{Text=$"{c.After?.Name ?? c.Before?.Name ?? c.ProjectId.ToString()} · Geräteänderung: {c.After?.Notes}",TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,12,0,4)});
+    Add(rows,"PC-Stand behalten",()=>{server.Mesh.Engine.Resolve(c.Id,false);review.Close();return Task.CompletedTask;});
+    Add(rows,"Gerätestand übernehmen",()=>{if(MessageBox.Show(review,"Den gespeicherten Gerätestand übernehmen? Bestehende Protokolle dürfen nicht entfernt werden.","Konflikt lösen",MessageBoxButton.YesNo,MessageBoxImage.Question,MessageBoxResult.No)==MessageBoxResult.Yes){server.Mesh.Engine.Resolve(c.Id,true);review.Close();}return Task.CompletedTask;});
+   }
+   review.ShowDialog();return Task.CompletedTask;
+  });
   timer.Tick+=(_,_)=>Refresh();timer.Start();Closed+=(_,_)=>timer.Stop();Refresh();
  }
  void Refresh()

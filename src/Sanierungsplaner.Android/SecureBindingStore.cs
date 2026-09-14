@@ -34,5 +34,17 @@ public sealed class SecureBindingStore(string folder)
   var serialized=JsonSerializer.Serialize(new Envelope(Convert.ToBase64String(cipher.GetIV()!),Convert.ToBase64String(data)));
   var temp=PathName+".tmp";File.WriteAllText(temp,serialized);File.Move(temp,PathName,true);
  }
+ public byte[] Unseal(string name)
+ {
+  var envelope=JsonSerializer.Deserialize<Envelope>(File.ReadAllText(System.IO.Path.Combine(folder,name)))??throw new InvalidDataException();
+  using var cipher=Cipher.GetInstance("AES/GCM/NoPadding")!;using var key=Key();using var spec=new GCMParameterSpec(128,Convert.FromBase64String(envelope.Iv));cipher.Init(CipherMode.DecryptMode,key,spec);
+  return cipher.DoFinal(Convert.FromBase64String(envelope.Data))!;
+ }
+ public void Seal(string name,byte[] bytes)
+ {
+  using var cipher=Cipher.GetInstance("AES/GCM/NoPadding")!;using var key=Key();cipher.Init(CipherMode.EncryptMode,key);
+  var data=cipher.DoFinal(bytes)!;var path=System.IO.Path.Combine(folder,name);var temp=path+".tmp";
+  File.WriteAllText(temp,JsonSerializer.Serialize(new Envelope(Convert.ToBase64String(cipher.GetIV()!),Convert.ToBase64String(data))));File.Move(temp,path,true);
+ }
  public void Clear(){if(File.Exists(PathName))File.Delete(PathName);}
 }

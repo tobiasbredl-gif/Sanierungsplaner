@@ -41,7 +41,7 @@ public partial class MainActivity : Activity
  protected override void OnResume()
  {
   base.OnResume();
-  autoSyncTick ??= () => { if(model!=null)Run(()=>Synchronize(true));autoSyncHandler.PostDelayed(autoSyncTick!,60000); };
+  autoSyncTick ??= () => { if(model!=null)Run(()=>Synchronize(true)); };
   autoSyncHandler.PostDelayed(autoSyncTick,1500);
  }
  protected override void OnPause() { if(autoSyncTick!=null)autoSyncHandler.RemoveCallbacks(autoSyncTick);PersistDraft(); base.OnPause(); }
@@ -93,8 +93,8 @@ public partial class MainActivity : Activity
   var scroll = new ScrollView(this) { FillViewport = true };
   page = Stack(); page.SetPadding(Dp(18),Dp(28),Dp(18),Dp(28)); page.SetBackgroundColor(AColor.ParseColor("#F4F6F3"));
   scroll.AddView(page); SetContentView(scroll);
-  Text(page,"S /  Sanierungsplaner",26,true);
-  Text(page,"Android 0.11.0 · Offline und sicheres Heimnetz",12);
+  Text(page,model.ApplicationHeading,26,true);
+  Text(page,"Android 0.12.0 · Offline und sicheres Heimnetz",12);
   if(model.ShowAbout) About();
   else if(!model.IsEditing) Home();
   else Project();

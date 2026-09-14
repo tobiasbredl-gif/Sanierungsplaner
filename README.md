@@ -1,6 +1,6 @@
 # Sanierungsplaner
 
-Native Windows-Desktop-App mit C# und WPF auf .NET 10. Version 0.10.0 bietet lokale Projekte, automatisch zusammengefasste Einkäufe mit Datum protokollierte Rückzahlungen von Tobias an Lea, Wolfgang und Jennifer sowie Verkaufsgutschriften und automatische Zahlungsbeträge.
+Native Windows-Desktop-App mit C# und WPF auf .NET 10. Version 0.12.0 bietet lokale Projekte, automatisch zusammengefasste Einkäufe mit Datum protokollierte Rückzahlungen von Tobias an Lea, Wolfgang und Jennifer sowie Verkaufsgutschriften und automatische Zahlungsbeträge.
 
 ## Ein Projekt anlegen
 
@@ -163,3 +163,7 @@ Oben in Kosten & Zahlungen zeigen Windows und Android die aktuellen Netto-Gesamt
 ## Version 0.11.0: Projekte für alle löschen
 
 Tobias kann Projekte in der Übersicht nach Bestätigung und Android-Gerätesperre für alle löschen. Der PC muss erreichbar sein. Andere Geräte übernehmen die Löschung beim nächsten Abgleich. Alte Kopien können das Projekt nicht wieder hochladen; eine Sicherung bleibt erhalten. PC und alle Handys müssen auf 0.11.0 aktualisiert werden. Details: [Gerätefreigabe und Löschen](docs/secure-sync.md).
+
+## Version 0.12.0 – PC-Verwaltung und direkter Handy-Abgleich
+
+Der PC bleibt die Verwaltungszentrale. Die Handys geben signierte Änderungen ohne Cloud untereinander weiter. Abgleich beim App-Start, Android-Nachtversuche zwischen 22 und 03 Uhr, automatischer PC-Abgleich nach einmaliger Einrichtung, Konfliktprüfung am PC und Löschungen für alle sind enthalten. Bei geöffnetem Projekt zeigt die Überschrift den Projektnamen. Einrichtung, Rechte und praktische Hintergrundgrenzen: [Geräteabgleich ohne Cloud](docs/offline-device-sync.md).

@@ -49,3 +49,7 @@ Die Löschung wird am PC gespeichert. Alle anderen Handys entfernen das Projekt 
 Die PC-App bietet denselben Button mit Rückfrage. Wie bei den übrigen Tobias-Verwaltungsfunktionen gilt dort der angemeldete Windows-Benutzer als vertrauenswürdig. Andere mobile Rollen erhalten keinen Löschbutton; der Server prüft die Rolle auch bei direkt gesendeten Löschanfragen.
 
 PC und alle Handys auf **0.11.0** aktualisieren. Ältere Android-Versionen übernehmen Löschungen noch nicht automatisch. Die neue Android-Version benötigt den neuen PC-Dienst. Vorhandene Rollen und Projekte bleiben beim Update erhalten. Falls die Windows-Firewall noch den alten Programmordner freigibt, im neuen Programm erneut **Windows-Zugriff im privaten Heimnetz erlauben** verwenden.
+
+## Version 0.12.0
+
+Für den direkten Handy-Abgleich und die neue Automatik gilt [Geräteabgleich ohne Cloud](offline-device-sync.md). Diese Version ersetzt den ausschließlich PC-abhängigen Ablauf aus den vorherigen Abschnitten. Alle Geräte müssen aktualisiert und einmal bei laufendem PC abgeglichen werden.

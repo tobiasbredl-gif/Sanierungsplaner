@@ -27,7 +27,12 @@ public sealed class SyncClient : IDisposable
  }
  public async Task Claim(string secret,string name)
  {
-  using var response=await http.PostAsJsonAsync("pair",new PairRequest(secret,name,http.DefaultRequestHeaders.Authorization!.Parameter!));await Check(response);
+  using var response=await Post("pair",new PairRequest(secret,name,http.DefaultRequestHeaders.Authorization!.Parameter!));await Check(response);
+ }
+ public async Task<SignedDirectory> RegisterMesh(MeshRegistration registration)
+ {
+  using var response=await Post("mesh/register",registration);await Check(response);
+  return await response.Content.ReadFromJsonAsync<SignedDirectory>()??throw new InvalidDataException();
  }
  public async Task<DeviceIdentity> Identity()
  {
@@ -88,7 +93,12 @@ public sealed class SyncClient : IDisposable
   using var projects=await http.GetAsync("projects");await Check(projects);
   var current=(await projects.Content.ReadFromJsonAsync<RenovationProject[]>())?.SingleOrDefault(p=>p.Id==project.Id);
   if(current!=null&&!Equivalent(current,project))throw new IOException("Die Projektstände unterscheiden sich. Bitte zuerst abgleichen und die Löschung erneut prüfen.");
-  using var response=await http.PostAsJsonAsync("delete-project",new DeleteProject(project.Id,current?.Revision));await Check(response);
+  using var response=await Post("delete-project",new DeleteProject(project.Id,current?.Revision));await Check(response);
+ }
+ async Task<HttpResponseMessage> Post<T>(string path,T body)
+ {
+  using var content=new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(body));content.Headers.ContentType=new MediaTypeHeaderValue("application/json");
+  return await http.PostAsync(path,content);
  }
  public void Dispose()=>http.Dispose();
 }

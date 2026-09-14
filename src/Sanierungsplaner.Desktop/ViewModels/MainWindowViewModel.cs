@@ -35,7 +35,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public CostPlanViewModel CostPlan { get; }
     private int _selectedProjectTab;
     public int SelectedProjectTab { get => _selectedProjectTab; set { _selectedProjectTab = value; OnPropertyChanged(); } }
+    private string _syncStatus="Geräteabgleich unter Handys / WLAN einrichten.";
+    public string SyncStatus {get=>_syncStatus;set{_syncStatus=value;OnPropertyChanged();}}
     public string StoragePath => _store.FolderPath;
+    public string ProjectBrand => ShowEditor ? (string.IsNullOrWhiteSpace(Name) ? "Neues Projekt" : Name.Trim()) : "S /";
+    public string ApplicationHeading => ShowEditor ? $"{ProjectBrand} · Sanierungsplaner" : "S /  Sanierungsplaner";
     public bool ShowAbout => _showAbout;
     public bool IsEditing => _isEditing;
     public bool ShowProjects => !ShowAbout && !IsEditing;
@@ -43,7 +47,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public bool IsEmpty => Projects.Count == 0 && !_loadFailed;
     public string ProjectCount => Projects.Count == 1 ? "1 gespeichertes Projekt" : $"{Projects.Count} gespeicherte Projekte";
     public string PageTitle => ShowAbout ? "Deine Pläne. Lokal gespeichert." : IsEditing ? (_original is null ? "Ein neues Projekt." : "Dein Projekt im Detail.") : "Raum für deine Pläne.";
-    public string PageDescription => ShowAbout ? "Sanierungsplaner · Version 0.11.0"
+    public string PageDescription => ShowAbout ? "Sanierungsplaner · Version 0.12.0"
         : IsEditing ? "Erfasse die Grundlagen für deine Sanierung. Du kannst alle Angaben später ändern."
         : "Alle Sanierungsvorhaben an einem Ort. Lege ein Projekt an oder arbeite an einem bestehenden weiter.";
     public string Name { get => _name; set { _name = value; DraftChanged(); } }
@@ -154,6 +158,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         Error = "";
         Status = "";
         OnPropertyChanged(property);
+        OnPropertyChanged(nameof(ProjectBrand));
+        OnPropertyChanged(nameof(ApplicationHeading));
         OnPropertyChanged(nameof(IsDirty));
         OnPropertyChanged(nameof(DraftStatus));
         SaveProjectCommand.Refresh();

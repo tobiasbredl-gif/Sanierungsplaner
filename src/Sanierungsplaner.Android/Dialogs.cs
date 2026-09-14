@@ -14,10 +14,10 @@ public partial class MainActivity
   var dialog=new AlertDialog.Builder(this)!.SetTitle(title)!.SetItems(options,(_,e)=>done.TrySetResult(e.Which))!.SetNegativeButton("Abbrechen",(_,_)=>done.TrySetResult(-1))!.Create()!;
   dialog.CancelEvent+=(_,_)=>done.TrySetResult(-1); dialog.Show();return done.Task;
  }
- async Task<bool> Confirm(string title,string message)
+ async Task<bool> Confirm(string title,string message,string confirmLabel="Ja")
  {
   var done=new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-  var d=new AlertDialog.Builder(this)!.SetTitle(title)!.SetMessage(message)!.SetPositiveButton("Ja",(_,_)=>done.TrySetResult(true))!.SetNegativeButton("Abbrechen",(_,_)=>done.TrySetResult(false))!.Create()!;
+  var d=new AlertDialog.Builder(this)!.SetTitle(title)!.SetMessage(message)!.SetPositiveButton(confirmLabel,(_,_)=>done.TrySetResult(true))!.SetNegativeButton("Abbrechen",(_,_)=>done.TrySetResult(false))!.Create()!;
   d.CancelEvent+=(_,_)=>done.TrySetResult(false);d.Show();return await done.Task;
  }
  Task Message(string title,string message)
