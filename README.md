@@ -167,3 +167,5 @@ Tobias kann Projekte in der Übersicht nach Bestätigung und Android-Gerätesper
 ## Version 0.12.0 – PC-Verwaltung und direkter Handy-Abgleich
 
 Der PC bleibt die Verwaltungszentrale. Die Handys geben signierte Änderungen ohne Cloud untereinander weiter. Abgleich beim App-Start, Android-Nachtversuche zwischen 22 und 03 Uhr, automatischer PC-Abgleich nach einmaliger Einrichtung, Konfliktprüfung am PC und Löschungen für alle sind enthalten. Bei geöffnetem Projekt zeigt die Überschrift den Projektnamen. Einrichtung, Rechte und praktische Hintergrundgrenzen: [Geräteabgleich ohne Cloud](docs/offline-device-sync.md).
+
+Ab Version 1.0.1 steht im geöffneten Projekt neben „Alle Projekte“ der Button „Aktualisieren“ bereit. Er startet den eingerichteten Geräteabgleich und lädt die Anzeige neu; Projekt und Reiter bleiben erhalten. Ungespeicherte Änderungen müssen zuerst gespeichert werden. Ohne eingerichteten Abgleich werden lokale Daten geladen.

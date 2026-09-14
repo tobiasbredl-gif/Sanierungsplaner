@@ -94,7 +94,7 @@ public partial class MainActivity : Activity
   page = Stack(); page.SetPadding(Dp(18),Dp(28),Dp(18),Dp(28)); page.SetBackgroundColor(AColor.ParseColor("#F4F6F3"));
   scroll.AddView(page); SetContentView(scroll);
   Text(page,model.ApplicationHeading,26,true);
-  Text(page,"Android 1.0.0 · Offline und sicheres Heimnetz",12);
+  Text(page,"Android 1.0.1 · Offline und sicheres Heimnetz",12);
   if(model.ShowAbout) About();
   else if(!model.IsEditing) Home();
   else Project();
@@ -128,8 +128,19 @@ public partial class MainActivity : Activity
  }
  void Project()
  {
-  Button(page,"← Alle Projekte",Back);
-  Button(page,"Jetzt mit PC abgleichen",()=>Synchronize(false),binding!=null);
+  var actions = new LinearLayout(this) { Orientation = Orientation.Horizontal };
+  page.AddView(actions);
+  var back = Button(actions,"← Alle Projekte",Back);
+  back.LayoutParameters = new LinearLayout.LayoutParams(0,-2,1);
+  var refresh = Button(actions,"Aktualisieren",async () =>
+  {
+   if(model.IsDirty){await Message("Zuerst speichern","Bitte Projektänderungen zuerst speichern oder verwerfen.");return;}
+   if(binding!=null)await Synchronize(false);
+   else {model.RefreshCurrentProject();Render();}
+  });
+  refresh.LayoutParameters = new LinearLayout.LayoutParams(0,-2,1);
+  back.TextSize=12;refresh.TextSize=12;
+  if(!string.IsNullOrWhiteSpace(syncMessage))Text(page,syncMessage,12);
   Text(page,binding?.Role is string role ? "Geräterolle: "+role : "Nicht freigegeben · Erstattungen gesperrt",12);
   Text(page,string.IsNullOrWhiteSpace(model.Name)?"Neues Projekt":model.Name,23,true);
   var nav = new LinearLayout(this) { Orientation=Orientation.Horizontal };

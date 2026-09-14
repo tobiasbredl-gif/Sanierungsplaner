@@ -26,6 +26,7 @@ internal static partial class Program
             TestEditing(Path.Combine(testRoot, "editing"));
             TestCosts(Path.Combine(testRoot, "costs"));
             TestMatching();
+            TestRefresh(Path.Combine(testRoot, "refresh"));
             TestRepayments(Path.Combine(testRoot, "repayments"));
             TestLegacyCosts(Path.Combine(testRoot, "legacy-costs"));
             TestIncoming(Path.Combine(testRoot, "incoming"));
@@ -44,6 +45,23 @@ internal static partial class Program
         {
             if (Directory.Exists(testRoot)) Directory.Delete(testRoot, recursive: true);
         }
+    }
+
+    private static void TestRefresh(string folder)
+    {
+        var store = new JsonProjectStore(folder);
+        var model = new MainWindowViewModel(store, new TestPrompt());
+        model.NewProjectCommand.Execute(null);
+        model.Name = "Vorher";
+        model.SaveProjectCommand.Execute(null);
+        model.SelectedProjectTab = 2;
+        var original = store.Load().Single();
+        store.Save(original with { Revision = Guid.NewGuid(), Name = "Vom Handy" }, original.Revision);
+        model.RefreshCurrentProject();
+        Check(model.Name == "Vom Handy" && model.IsEditing && model.SelectedProjectTab == 2, "Aktualisieren übernimmt externe Änderungen und erhält Projekt/Reiter");
+        model.Name = "Ungespeichert";
+        model.RefreshCurrentProject();
+        Check(model.Name == "Ungespeichert" && model.IsDirty, "Aktualisieren schützt ungespeicherte Eingaben");
     }
 
     private static void TestPersistence(string folder)
@@ -156,7 +174,7 @@ internal static partial class Program
         if (screenshot is not null) Capture(window, screenshot);
         model.ShowAboutCommand.Execute(null);
         Pump(window);
-        Check(model.ShowAbout && model.PageDescription.Contains("1.0.0"), "App-Information");
+        Check(model.ShowAbout && model.PageDescription.Contains("1.0.1"), "App-Information");
         model.ShowHomeCommand.Execute(null);
         model.OpenProjectCommand.Execute(model.Projects.Single());
         Pump(window);

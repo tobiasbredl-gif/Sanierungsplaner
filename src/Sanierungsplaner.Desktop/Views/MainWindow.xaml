@@ -38,7 +38,7 @@
                 </StackPanel>
                 <StackPanel DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
                     <TextBlock Text="WINDOWS DESKTOP" Foreground="#BDD0C8" FontSize="11" />
-                    <TextBlock Text="Kostenübersicht · 1.0.0" Foreground="White" Margin="0,6,0,0" />
+                    <TextBlock Text="Kostenübersicht · 1.0.1" Foreground="White" Margin="0,6,0,0" />
                     <TextBlock Text="{Binding SyncStatus}" Foreground="White" TextWrapping="Wrap" FontSize="11" Margin="0,12,0,0" />
                 </StackPanel>
             </DockPanel>
@@ -91,7 +91,7 @@
                         </ItemsControl>
                     </StackPanel>
                     <StackPanel Visibility="{Binding ShowEditor, Converter={StaticResource VisibleWhenTrue}}">
-                        <Button Content="← Alle Projekte" Command="{Binding BackCommand}" HorizontalAlignment="Left" Style="{StaticResource SecondaryButton}" Margin="0,0,0,16" />
+                        <WrapPanel Margin="0,0,0,16"><Button Content="← Alle Projekte" Command="{Binding BackCommand}" Style="{StaticResource SecondaryButton}" Margin="0,0,12,0" /><Button x:Name="RefreshProjectButton" Content="Aktualisieren" Click="RefreshProject" Style="{StaticResource SecondaryButton}" /></WrapPanel>
                         <TabControl x:Name="ProjectTabs" SelectedIndex="{Binding SelectedProjectTab, Mode=TwoWay}" Background="Transparent" BorderThickness="0" Padding="0,16,0,0">
                             <TabItem Header="Projektdaten" Padding="16,10">
                         <Border Style="{StaticResource Card}">

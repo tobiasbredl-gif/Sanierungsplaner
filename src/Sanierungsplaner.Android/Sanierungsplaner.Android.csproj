@@ -4,8 +4,8 @@
     <SupportedOSPlatformVersion>26.0</SupportedOSPlatformVersion>
     <OutputType>Exe</OutputType>
     <ApplicationId>de.sanierungsplaner.android</ApplicationId>
-    <ApplicationVersion>5</ApplicationVersion>
-    <ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
+    <ApplicationVersion>6</ApplicationVersion>
+    <ApplicationDisplayVersion>1.0.1</ApplicationDisplayVersion>
     <ApplicationTitle>Sanierungsplaner</ApplicationTitle>
     <Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings>
     <AndroidPackageFormats>apk</AndroidPackageFormats>

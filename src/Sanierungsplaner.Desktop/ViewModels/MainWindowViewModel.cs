@@ -47,7 +47,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public bool IsEmpty => Projects.Count == 0 && !_loadFailed;
     public string ProjectCount => Projects.Count == 1 ? "1 gespeichertes Projekt" : $"{Projects.Count} gespeicherte Projekte";
     public string PageTitle => ShowAbout ? "Deine Pläne. Lokal gespeichert." : IsEditing ? (_original is null ? "Ein neues Projekt." : "Dein Projekt im Detail.") : "Raum für deine Pläne.";
-    public string PageDescription => ShowAbout ? "Sanierungsplaner · Version 1.0.0"
+    public string PageDescription => ShowAbout ? "Sanierungsplaner · Version 1.0.1"
         : IsEditing ? "Erfasse die Grundlagen für deine Sanierung. Du kannst alle Angaben später ändern."
         : "Alle Sanierungsvorhaben an einem Ort. Lege ein Projekt an oder arbeite an einem bestehenden weiter.";
     public string Name { get => _name; set { _name = value; DraftChanged(); } }
@@ -78,6 +78,22 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             UnsavedChangesChoice.Discard => true,
             _ => false
         };
+    }
+
+    public void RefreshCurrentProject()
+    {
+        if (IsDirty) return;
+        var id = _original?.Id;
+        var editing = IsEditing;
+        var tab = SelectedProjectTab;
+        Load();
+        if (_loadFailed) return;
+        if (editing && id is Guid projectId)
+        {
+            var project = Projects.FirstOrDefault(p => p.Id == projectId);
+            if (project != null) { Edit(project); SelectedProjectTab = tab; }
+            else { _isEditing = false; NotifyView(); }
+        }
     }
 
     private void Load()

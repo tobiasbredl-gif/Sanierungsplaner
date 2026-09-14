@@ -6,6 +6,26 @@ namespace Sanierungsplaner.Desktop.Views;
 
 public partial class MainWindow : Window
 {
+    private async void RefreshProject(object sender, RoutedEventArgs e)
+    {
+        var model = (MainWindowViewModel)DataContext;
+        if (meshBusy) return;
+        if (model.IsDirty)
+        {
+            MessageBox.Show(this, "Bitte Projektänderungen zuerst speichern oder verwerfen.", "Zuerst speichern");
+            return;
+        }
+        RefreshProjectButton.IsEnabled = false;
+        try
+        {
+            await AutomaticMesh();
+            model.RefreshCurrentProject();
+            if (syncServer?.Running != true)
+                model.SyncStatus = "Lokale Daten aktualisiert. Geräteabgleich unter Handys / WLAN starten.";
+        }
+        finally { RefreshProjectButton.IsEnabled = true; }
+    }
+
     private void DeleteProject(object sender,RoutedEventArgs e)
     {
         var project=(Models.RenovationProject)((System.Windows.Controls.Button)sender).Tag;
