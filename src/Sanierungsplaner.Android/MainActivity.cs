@@ -94,7 +94,7 @@ public partial class MainActivity : Activity
   page = Stack(); page.SetPadding(Dp(18),Dp(28),Dp(18),Dp(28)); page.SetBackgroundColor(AColor.ParseColor("#F4F6F3"));
   scroll.AddView(page); SetContentView(scroll);
   Text(page,model.ApplicationHeading,26,true);
-  Text(page,"Android 1.0.1 · Offline und sicheres Heimnetz",12);
+  Text(page,"Android 1.0.2 · Offline und sicheres Heimnetz",12);
   if(model.ShowAbout) About();
   else if(!model.IsEditing) Home();
   else Project();
@@ -111,7 +111,7 @@ public partial class MainActivity : Activity
   {
    var card=Stack(page,true); Text(card,p.Name,20,true); Text(card,p.AddressLabel); Text(card,p.UpdatedLabel,12);
    if(IsTobias)Button(card,"Projekt für alle löschen",()=>DeleteForEveryone(p));
-   Button(card,"Projekt öffnen",()=> {model.OpenProjectCommand.Execute(p); openedId=p.Id; Render(); return Task.CompletedTask;}, model.OpenProjectCommand.CanExecute(p));
+   Button(card,"Projekt öffnen",async ()=> {model.OpenProjectCommand.Execute(p); openedId=p.Id; Render(); await Synchronize(true);}, model.OpenProjectCommand.CanExecute(p));
   }
   if(model.IsEmpty) Text(page,"Noch kein Projekt. Lege dein erstes Sanierungsprojekt an.");
   Button(page,"Erneut laden",()=> {model.ReloadCommand.Execute(null); Render(); return Task.CompletedTask;});

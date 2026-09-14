@@ -38,7 +38,7 @@
                 </StackPanel>
                 <StackPanel DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
                     <TextBlock Text="WINDOWS DESKTOP" Foreground="#BDD0C8" FontSize="11" />
-                    <TextBlock Text="Kostenübersicht · 1.0.1" Foreground="White" Margin="0,6,0,0" />
+                    <TextBlock Text="Kostenübersicht · 1.0.2" Foreground="White" Margin="0,6,0,0" />
                     <TextBlock Text="{Binding SyncStatus}" Foreground="White" TextWrapping="Wrap" FontSize="11" Margin="0,12,0,0" />
                 </StackPanel>
             </DockPanel>

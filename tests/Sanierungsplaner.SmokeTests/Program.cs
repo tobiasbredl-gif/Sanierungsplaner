@@ -59,6 +59,11 @@ internal static partial class Program
         store.Save(original with { Revision = Guid.NewGuid(), Name = "Vom Handy" }, original.Revision);
         model.RefreshCurrentProject();
         Check(model.Name == "Vom Handy" && model.IsEditing && model.SelectedProjectTab == 2, "Aktualisieren übernimmt externe Änderungen und erhält Projekt/Reiter");
+        model.BackCommand.Execute(null);
+        var opened = 0;
+        model.ProjectOpened += (_, _) => opened++;
+        model.OpenProjectCommand.Execute(original);
+        Check(model.Name == "Vom Handy" && opened == 1, "Öffnen lädt den aktuellen lokalen Stand und fordert genau einen Abgleich an");
         model.Name = "Ungespeichert";
         model.RefreshCurrentProject();
         Check(model.Name == "Ungespeichert" && model.IsDirty, "Aktualisieren schützt ungespeicherte Eingaben");
@@ -174,7 +179,7 @@ internal static partial class Program
         if (screenshot is not null) Capture(window, screenshot);
         model.ShowAboutCommand.Execute(null);
         Pump(window);
-        Check(model.ShowAbout && model.PageDescription.Contains("1.0.1"), "App-Information");
+        Check(model.ShowAbout && model.PageDescription.Contains("1.0.2"), "App-Information");
         model.ShowHomeCommand.Execute(null);
         model.OpenProjectCommand.Execute(model.Projects.Single());
         Pump(window);

@@ -45,7 +45,7 @@ public partial class MainWindow : Window
             await syncServer.Mesh.Engine.Synchronize();
             var model=(MainWindowViewModel)DataContext;
             model.SyncStatus=syncServer.Mesh.Engine.LastStatus;
-            if(model.ShowProjects&&!model.IsDirty)model.ReloadCommand.Execute(null);
+            if(!model.IsDirty)model.RefreshCurrentProject();
         }
         catch(Exception error){((MainWindowViewModel)DataContext).SyncStatus="Abgleich nicht abgeschlossen: "+error.Message;}
         finally{meshBusy=false;}
@@ -67,6 +67,16 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         DataContext = model;
+        model.ProjectOpened += async (_, _) =>
+        {
+            if (meshBusy)
+            {
+                // The running sync will refresh the clean editor when it finishes.
+                return;
+            }
+            await AutomaticMesh();
+            model.RefreshCurrentProject();
+        };
         meshTimer.Tick+=async(_,_)=>await AutomaticMesh();
         Loaded+=async(_,_)=>
         {

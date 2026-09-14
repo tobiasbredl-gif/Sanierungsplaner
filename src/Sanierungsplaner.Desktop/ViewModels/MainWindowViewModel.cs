@@ -24,7 +24,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         ShowHomeCommand = new RelayCommand(() => { _showAbout = false; NotifyView(); });
         ShowAboutCommand = new RelayCommand(() => { _showAbout = true; NotifyView(); });
         NewProjectCommand = new RelayCommand(() => { if (CanLeaveEditor()) Edit(null); }, () => !_loadFailed);
-        OpenProjectCommand = new RelayCommand(p => { if (CanLeaveEditor()) Edit((RenovationProject)p!); }, p => !_loadFailed && p is RenovationProject);
+        OpenProjectCommand = new RelayCommand(p => { if (CanLeaveEditor()) { Edit((RenovationProject)p!); RefreshCurrentProject(); ProjectOpened?.Invoke(this, EventArgs.Empty); } }, p => !_loadFailed && p is RenovationProject);
         SaveProjectCommand = new RelayCommand(() => Save(), () => IsEditing && !_loadFailed && IsDirty);
         BackCommand = new RelayCommand(() => { if (CanLeaveEditor()) { _isEditing = false; Error = ""; NotifyView(); } });
         ReloadCommand = new RelayCommand(() => { if (CanLeaveEditor()) { _isEditing = false; Load(); } });
@@ -47,7 +47,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public bool IsEmpty => Projects.Count == 0 && !_loadFailed;
     public string ProjectCount => Projects.Count == 1 ? "1 gespeichertes Projekt" : $"{Projects.Count} gespeicherte Projekte";
     public string PageTitle => ShowAbout ? "Deine Pläne. Lokal gespeichert." : IsEditing ? (_original is null ? "Ein neues Projekt." : "Dein Projekt im Detail.") : "Raum für deine Pläne.";
-    public string PageDescription => ShowAbout ? "Sanierungsplaner · Version 1.0.1"
+    public string PageDescription => ShowAbout ? "Sanierungsplaner · Version 1.0.2"
         : IsEditing ? "Erfasse die Grundlagen für deine Sanierung. Du kannst alle Angaben später ändern."
         : "Alle Sanierungsvorhaben an einem Ort. Lege ein Projekt an oder arbeite an einem bestehenden weiter.";
     public string Name { get => _name; set { _name = value; DraftChanged(); } }
@@ -68,6 +68,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public RelayCommand BackCommand { get; }
     public RelayCommand ReloadCommand { get; }
     public event PropertyChangedEventHandler? PropertyChanged;
+    public event EventHandler? ProjectOpened;
 
     public bool CanLeaveEditor()
     {
