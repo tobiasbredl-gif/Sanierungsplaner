@@ -1,6 +1,6 @@
 # Sanierungsplaner
 
-Native Windows-Desktop-App mit C# und WPF auf .NET 10. Version 0.12.0 bietet lokale Projekte, automatisch zusammengefasste Einkäufe mit Datum protokollierte Rückzahlungen von Tobias an Lea, Wolfgang und Jennifer sowie Verkaufsgutschriften und automatische Zahlungsbeträge.
+Native Windows-Desktop-App mit C# und WPF auf .NET 10. Version 1.0.0 bietet lokale Projekte, automatisch zusammengefasste Einkäufe mit Datum protokollierte Rückzahlungen von Tobias an Lea, Wolfgang und Jennifer sowie Verkaufsgutschriften und automatische Zahlungsbeträge.
 
 ## Ein Projekt anlegen
 
@@ -97,7 +97,7 @@ Der Test prüft Anlegen, Bearbeiten, erneutes Laden, Pflichtfelder, Speicherkonf
 dotnet publish src/Sanierungsplaner.Desktop --configuration Release --runtime win-x64 --self-contained true --output artifacts/win-x64
 ```
 
-Anschließend `artifacts/win-x64/Sanierungsplaner.exe` starten. Den **gesamten** Ordner weitergeben; auf dem Zielgerät ist keine separate .NET-Installation erforderlich. Dies ist eine portable Ausgabe, noch kein Installer und nicht digital signiert.
+Anschließend `artifacts/win-x64/Sanierungsplaner.exe` starten. Den **gesamten** Ordner weitergeben; auf dem Zielgerät ist keine separate .NET-Installation erforderlich. Die Ausgabe ist nicht digital signiert. Das fertige Windows-Paket enthält zusätzlich eine Installation für den aktuellen Benutzer mit Desktop- und Startmenü-Verknüpfungen. Siehe [Installation und Updates](docs/release-and-updates.md).
 
 ## Projektstruktur
 

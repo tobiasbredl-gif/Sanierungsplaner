@@ -94,7 +94,7 @@ public partial class MainActivity : Activity
   page = Stack(); page.SetPadding(Dp(18),Dp(28),Dp(18),Dp(28)); page.SetBackgroundColor(AColor.ParseColor("#F4F6F3"));
   scroll.AddView(page); SetContentView(scroll);
   Text(page,model.ApplicationHeading,26,true);
-  Text(page,"Android 0.12.0 · Offline und sicheres Heimnetz",12);
+  Text(page,"Android 1.0.0 · Offline und sicheres Heimnetz",12);
   if(model.ShowAbout) About();
   else if(!model.IsEditing) Home();
   else Project();

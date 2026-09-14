@@ -156,7 +156,7 @@ internal static partial class Program
         if (screenshot is not null) Capture(window, screenshot);
         model.ShowAboutCommand.Execute(null);
         Pump(window);
-        Check(model.ShowAbout && model.PageDescription.Contains("0.12.0"), "App-Information");
+        Check(model.ShowAbout && model.PageDescription.Contains("1.0.0"), "App-Information");
         model.ShowHomeCommand.Execute(null);
         model.OpenProjectCommand.Execute(model.Projects.Single());
         Pump(window);

@@ -1,15 +1,15 @@
-# Android-App · Testversion 0.12.0
+# Android-App · Version 1.0.0
 
-Diese native Android-App ist für Tobias' ersten Handytest vorgesehen. Sie benötigt Android 8.0 oder neuer und einen 64-Bit-Prozessor (ARM64; zusätzlich x64 für Emulatoren).
+Diese native Android-App kann auf den freizugebenden Familienhandys installiert werden. Sie benötigt Android 8.0 oder neuer und einen 64-Bit-Prozessor (ARM64; zusätzlich x64 für Emulatoren).
 
 ## Installation auf dem Handy
 
-1. `Sanierungsplaner-Android-v0.12.0.apk` auf das Handy übertragen, z. B. per USB in den Download-Ordner.
+1. `Sanierungsplaner-Android-v1.0.0.apk` auf das Handy übertragen, z. B. per USB in den Download-Ordner.
 2. Die APK auf dem Handy öffnen. Falls Android fragt, die Installation aus dieser Quelle für die verwendete Dateien-App erlauben.
 3. Installieren und **Sanierungsplaner** öffnen.
 4. Unter **PC koppeln / WLAN-Abgleich** die Gerätefreigabe einrichten; siehe [Kopplungsanleitung](secure-sync.md). Ohne Freigabe sind mobile Erstattungen gesperrt.
 
-Spätere APK-Updates über die vorhandene App installieren. Nicht vorher deinstallieren: Eine Deinstallation löscht die lokalen Projekte. Die Test-APK ist signiert und braucht keinen Play Store. Vor einer Verteilung an weitere Personen wird der Installations- und Updateweg finalisiert.
+Spätere APK-Updates über die vorhandene App installieren. Nicht vorher deinstallieren: Eine Deinstallation löscht die lokalen Projekte. Die Test-APK ist signiert und braucht keinen Play Store. Der Updateweg von 0.12.0 auf 1.0.0 wurde im Emulator mit erhaltenen Projekten und Gerätefreigabe geprüft. Siehe [Installation und Updates](release-and-updates.md).
 
 ## Funktionen
 

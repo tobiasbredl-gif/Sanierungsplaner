@@ -5,8 +5,10 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>Sanierungsplaner</AssemblyName>
     <RootNamespace>Sanierungsplaner.Desktop</RootNamespace>
-    <Version>0.12.0</Version>
+    <Version>1.0.0</Version>
+    <ApplicationIcon>Assets/app.ico</ApplicationIcon>
     <Description>Windows-Desktop-App zur lokalen Verwaltung von Sanierungsprojekten</Description>
   </PropertyGroup>
+  <ItemGroup><Resource Include="Assets/app.ico" /></ItemGroup>
   <ItemGroup><FrameworkReference Include="Microsoft.AspNetCore.App" /><Compile Include="../Sanierungsplaner.SharedSync/*.cs" Link="SyncShared/%(Filename)%(Extension)" /></ItemGroup>
 </Project>
